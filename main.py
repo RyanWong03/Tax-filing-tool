@@ -1,4 +1,4 @@
-import importlib
+import importlib, library
 
 def load_year(year):
     try:
@@ -6,9 +6,6 @@ def load_year(year):
         return module
     except ImportError:
         raise ValueError(f"Tax year {year} is not supported.")
-    
-def irs_round(amount):
-    return int(amount + 0.5)
 
 def main():
     print("=== TAX ASSISTANT ===")
@@ -24,11 +21,18 @@ def main():
     wages = 0
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
     while True:
-        wages += irs_round(float(input("Enter the total wages from a W-2 form. You will see this on Line 1,"
+        wages += library.irs_round(float(input("Enter the total wages from a W-2 form. You will see this on Line 1,"
         "labeled \"Wages, tips, and other compensation\": ")))
         more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
         if more_w2 != 'yes':
             break
+
+    filing_data = {
+        'year': year,
+        'filing_status': filing_status,
+        'wages': wages,
+        'constants': tax_year
+    }
 
 
 if __name__ == "__main__":
