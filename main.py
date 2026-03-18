@@ -21,7 +21,6 @@ def main():
         print("Invalid filing status.")
         return
     
-    #For line 1a
     wages = 0
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
     while True:
