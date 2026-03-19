@@ -10,22 +10,42 @@ def load_year(year):
 def main():
     print("=== TAX ASSISTANT ===")
 
-    year = int(input("Enter the tax year you are filing for (e.g., 2026): "))
-    tax_year = load_year(year)
+    while True:
+        try:
+            year = int(input("Enter the tax year you are filing for (e.g., 2026): "))
+            tax_year = load_year(year)
+            break
+        except ValueError:
+            print("Invalid tax year. Please try again.")
 
-    filing_status = input("Enter your filing status (single/married_filing_jointly): ").strip().lower()
-    if filing_status not in tax_year.STANDARD_DEDUCTION:
-        print("Invalid filing status.")
-        return
-    
+
+    while True:
+        filing_status = input("Enter your filing status (single/married_filing_jointly): ").strip().lower()
+        if filing_status not in tax_year.STANDARD_DEDUCTION:
+            print("Invalid filing status. Please try again.")
+        else:
+            break
+
     wages = 0
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
     while True:
-        wages += library.irs_round(float(input("Enter the total wages from a W-2 form. You will see this on Line 1,"
-        "labeled \"Wages, tips, and other compensation\": ")))
-        more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
-        if more_w2 != 'yes':
-            break
+        try:
+            wages += library.irs_round(float(input("Enter the total wages from a W-2 form. You will see this on Line 1, "
+            "labeled \"Wages, tips, and other compensation\": ")))
+            
+            more_w2 = None
+            while True:
+                more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
+                if more_w2 == 'no' or more_w2 == 'yes':
+                    break
+                else:
+                    print("Invalid input. Please enter 'yes' or 'no'.")
+            
+            if more_w2 == 'no':
+                break
+        except ValueError:
+            print("Invalid input. Please enter a numeric value for wages.")
+
 
     filing_data = {
         'year': year,

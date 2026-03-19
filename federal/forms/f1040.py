@@ -20,6 +20,7 @@ def calculate(filing_data):
     line_15 = max(0, line_11 - line_14) #Taxable income
 
     line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
+    print(line_16)
 
 
 def calculate_income_tax(taxable_income, tax_brackets):
