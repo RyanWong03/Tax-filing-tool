@@ -1,4 +1,4 @@
-import importlib, library
+import importlib, library, federal.forms.f1040
 
 def load_year(year):
     try:
@@ -33,6 +33,8 @@ def main():
         'wages': wages,
         'constants': tax_year
     }
+
+    federal.forms.f1040.calculate(filing_data)
 
 
 if __name__ == "__main__":

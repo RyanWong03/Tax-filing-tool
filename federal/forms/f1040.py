@@ -1,4 +1,4 @@
-import library
+import math, library
 
 def calculate(filing_data):
     constants = filing_data['constants']
@@ -25,10 +25,22 @@ def calculate(filing_data):
 def calculate_income_tax(taxable_income, tax_brackets):
     tax = 0
 
-    for lower, upper, rate in tax_brackets:
-        if taxable_income <= lower:
-            break
-        taxable_at_rate = min(taxable_income, upper) - lower
-        tax += taxable_at_rate * rate
+    #If taxable income is under $100,000, calculate tax using IRS tax table via 1040 instructions.
+    if taxable_income < 100000:
+        #The way the IRS calculates the tax owed on income under $100k, is by figuring out which $50 slot you are in,
+        #getting the midpoint of that slot then applying the tax brackets to that income.
+        #Example income = $15019:
+        #You'd fall between the slot of $15000 and $15050, so the midpoint would be $15025.
+        #Then you'd apply the tax brackets to $15025 to get your tax owed.
+
+        income_slot = math.floor(taxable_income / 50) * 50
+        income_midpoint = income_slot + 25
+        taxable_income = income_midpoint
+        
+        for lower, upper, rate in tax_brackets:
+            if taxable_income <= lower:
+                break
+            taxable_at_rate = min(taxable_income, upper) - lower
+            tax += taxable_at_rate * rate
     
     return library.irs_round(tax)
