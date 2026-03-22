@@ -20,7 +20,6 @@ def calculate(filing_data):
     line_15 = max(0, line_11 - line_14) #Taxable income
 
     line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
-    print(line_16)
 
     line_17 = 0 #Placeholder 
 
@@ -33,7 +32,6 @@ def calculate(filing_data):
     line_23 = 0 #Placeholder
 
     line_24 = line_22 + line_23 #Total tax owed
-    print(f"Total tax owed: ${line_24:.2f}")
 
     line_25a = 0 #Federal income tax withheld from W-2s
     line_25b = 0 #Federal income tax withheld from 1099s
@@ -87,7 +85,17 @@ def calculate(filing_data):
 
     line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
 
-    print(f"Refund amount: ${line_34:.2f}")
+    line_36 = 0 #Default amount
+    while True:
+        line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
+        if(line_36 > line_34):
+            print("You cannot apply more than your total refund to estimated taxes. Please try again.")
+        else:
+            break
+
+    line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
+
+    line_38 = 0 #For the sake of this, ignore penalties...
 
 def calculate_income_tax(taxable_income, tax_brackets):
     tax = 0

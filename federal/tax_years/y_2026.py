@@ -1,6 +1,8 @@
 #Tax year constants for 2026
 #Filed in early 2027
 
+tax_year = 2026
+
 STANDARD_DEDUCTION = {
     'single': 16100,
     'married_filing_jointly': 32200,
