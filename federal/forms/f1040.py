@@ -53,22 +53,22 @@ def calculate(filing_data):
         except ValueError:
             print("Invalid input. Please enter a numeric value for federal income tax withheld from W-2s.")
 
-    while True:
-        try:
-            line_25b += library.irs_round(float(input("Enter the total federal income tax withheld from your 1099 forms (Box 4 on your 1099): ")))
+    # while True:
+    #     try:
+    #         line_25b += library.irs_round(float(input("Enter the total federal income tax withheld from your 1099 forms (Box 4 on your 1099): ")))
             
-            more_1099 = None
-            while True:
-                more_1099 = input("Do you have another 1099 to enter? (yes/no): ").strip().lower()
-                if more_1099 == 'no' or more_1099 == 'yes':
-                    break
-                else:
-                    print("Invalid input. Please enter 'yes' or 'no'.")
+    #         more_1099 = None
+    #         while True:
+    #             more_1099 = input("Do you have another 1099 to enter? (yes/no): ").strip().lower()
+    #             if more_1099 == 'no' or more_1099 == 'yes':
+    #                 break
+    #             else:
+    #                 print("Invalid input. Please enter 'yes' or 'no'.")
             
-            if more_1099 == 'no':
-                break
-        except ValueError:
-            print("Invalid input. Please enter a numeric value for federal income tax withheld from 1099s.")
+    #         if more_1099 == 'no':
+    #             break
+    #     except ValueError:
+    #         print("Invalid input. Please enter a numeric value for federal income tax withheld from 1099s.")
 
     line_25d = line_25a + line_25b
 
