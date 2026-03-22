@@ -19,6 +19,8 @@ def calculate(filing_data):
 
     line_15 = max(0, line_11 - line_14) #Taxable income
 
+    print(f"Taxable income: ${line_15:.2f}")
+
     line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
 
     line_17 = 0 #Placeholder 
@@ -32,6 +34,8 @@ def calculate(filing_data):
     line_23 = 0 #Placeholder
 
     line_24 = line_22 + line_23 #Total tax owed
+
+    print(f"Total tax owed: ${line_24:.2f}")
 
     line_25a = 0 #Federal income tax withheld from W-2s
     line_25b = 0 #Federal income tax withheld from 1099s
@@ -53,6 +57,8 @@ def calculate(filing_data):
         except ValueError:
             print("Invalid input. Please enter a numeric value for federal income tax withheld from W-2s.")
 
+    print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
+    
     # while True:
     #     try:
     #         line_25b += library.irs_round(float(input("Enter the total federal income tax withheld from your 1099 forms (Box 4 on your 1099): ")))
@@ -85,6 +91,8 @@ def calculate(filing_data):
 
     line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
 
+    print(f"Refund amount: ${line_34:.2f}")
+
     line_36 = 0 #Default amount
     while True:
         line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
@@ -95,6 +103,7 @@ def calculate(filing_data):
 
     line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
 
+    print(f"Amount of tax owed: ${line_37:.2f}")
     line_38 = 0 #For the sake of this, ignore penalties...
 
 def calculate_income_tax(taxable_income, tax_brackets):
