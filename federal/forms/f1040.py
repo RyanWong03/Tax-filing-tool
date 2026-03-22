@@ -58,7 +58,7 @@ def calculate(filing_data):
             print("Invalid input. Please enter a numeric value for federal income tax withheld from W-2s.")
 
     print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
-    
+
     # while True:
     #     try:
     #         line_25b += library.irs_round(float(input("Enter the total federal income tax withheld from your 1099 forms (Box 4 on your 1099): ")))
@@ -120,11 +120,15 @@ def calculate_income_tax(taxable_income, tax_brackets):
         income_slot = math.floor(taxable_income / 50) * 50
         income_midpoint = income_slot + 25
         taxable_income = income_midpoint
+
+    #If taxable income is >= $100k, the tax calculation is much more straightforward.
+    #There is no table, just basic percentage the IRS has given us.
+    #They do differ based on filing status.
         
-        for lower, upper, rate in tax_brackets:
+    for lower, upper, rate in tax_brackets:
             if taxable_income <= lower:
                 break
             taxable_at_rate = min(taxable_income, upper) - lower
             tax += taxable_at_rate * rate
-    
+
     return library.irs_round(tax)
