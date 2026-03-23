@@ -1,5 +1,9 @@
 import library
 
+#Enums for determining which section of Schedule B to fill out
+INTEREST = 0
+DIVIDENDS = 1
+
 #Interest from 1099-INT forms
 def taxable_interest():
     total_interest = 0
@@ -35,4 +39,20 @@ def taxable_interest():
     
     print(f"Total interest collected: ${total_interest:.2f}")
     #print(interest_forms)
+
+    if total_interest > 1500:
+        res = schedule_b_fillout(interest_forms, INTEREST)
+        print(res)
     return total_interest
+
+def schedule_b_fillout(form_data, section):
+    fields = []
+    if section == INTEREST:
+        fields.append("Part 1: Interest\n")
+        for index, (payer, amount) in enumerate(zip(form_data["payers"], form_data["amounts"])):
+            print(type(payer))
+            print(type(amount))
+            print(amount)
+            fields.append(f"Line {index + 1}: {payer} ... ${amount:.2f}\n")
+    
+    return fields
