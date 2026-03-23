@@ -111,17 +111,29 @@ def calculate(filing_data):
 def calculate_income_tax(taxable_income, tax_brackets):
     tax = 0
 
+    #Protect against $0 or lower case
+    if taxable_income <= 0:
+        return 0
+    
     #If taxable income is under $100,000, calculate tax using IRS tax table via 1040 instructions.
     if taxable_income < 100000:
         #The way the IRS calculates the tax owed on income under $100k, is by figuring out which $50 slot you are in,
         #getting the midpoint of that slot then applying the tax brackets to that income.
+        #If you make under $3k, the slot goes from $50 to $25.
         #Example income = $15019:
         #You'd fall between the slot of $15000 and $15050, so the midpoint would be $15025.
         #Then you'd apply the tax brackets to $15025 to get your tax owed.
+        #Example income = $1000:
+        #You'd fall between the slot of $1000 and $1025, so the midpoint would be $1012.5.
 
-        income_slot = math.floor(taxable_income / 50) * 50
-        income_midpoint = income_slot + 25
-        taxable_income = income_midpoint
+        if taxable_income < 3000:
+            income_slot = math.floor(taxable_income / 25) * 25
+            income_midpoint = income_slot + 12.5
+            taxable_income = income_midpoint
+        else:
+            income_slot = math.floor(taxable_income / 50) * 50
+            income_midpoint = income_slot + 25
+            taxable_income = income_midpoint
 
     #If taxable income is >= $100k, the tax calculation is much more straightforward.
     #There is no table, just basic percentage the IRS has given us.
