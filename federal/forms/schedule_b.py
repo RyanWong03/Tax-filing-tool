@@ -6,9 +6,19 @@ def taxable_interest():
 
     print("Please gather all of your 1099-INT forms.")
 
+    interest_forms = {
+        "payers": [],
+        "amounts": []
+    }
+
     while True:
         try:
-            total_interest += library.irs_round(float(input("Enter the total interest from a 1099-INT form (Box 1): ")))
+            payer = input("Enter the name of the payer from a 1099-INT form: ").strip()
+            interest_forms["payers"].append(payer)
+
+            amount = library.irs_round(float(input("Enter the total interest from the 1099-INT form (Box 1): ")))
+            interest_forms["amounts"].append(amount)
+            total_interest += amount
 
             more_1099_int = None
             while True:
@@ -24,4 +34,5 @@ def taxable_interest():
             print("Invalid input. Please enter a numeric value for interest.")
     
     print(f"Total interest collected: ${total_interest:.2f}")
+    #print(interest_forms)
     return total_interest
