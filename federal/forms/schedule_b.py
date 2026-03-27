@@ -5,8 +5,8 @@ INTEREST = 0
 DIVIDENDS = 1
 
 #Interest from 1099-INT forms
-def taxable_interest():
-    total_interest = 0
+def total_interest():
+    taxable_interest = 0
 
     print("Please gather all of your 1099-INT forms.")
 
@@ -23,10 +23,15 @@ def taxable_interest():
             interest_forms["payers"].append(payer)
 
             amount = library.irs_round(float(input("Enter the total interest from the 1099-INT form (Box 1): ")))
+            early_withdrawal_penalty = library.irs_round(float(input("Enter the total early withdrawal penalty from the 1099-INT form (Box 2): ")))
             bond_interest = library.irs_round(float(input("Enter the total interest on U.S. Savings Bonds from the 1099-INT form (Box 3): ")))
+            fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
+            #Exempt federally, taxed by state or local.
+            tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
+            
             amounts_arr = [amount, bond_interest]
             interest_forms["amounts"].append(amounts_arr)
-            total_interest += (amount + bond_interest)
+            taxable_interest += (amount + bond_interest)
 
             more_1099_int = None
             while True:
@@ -41,12 +46,12 @@ def taxable_interest():
         except ValueError:
             print("Invalid input. Please enter a numeric value for interest.")
     
-    print(f"Total interest collected: ${total_interest:.2f}")
+    print(f"Total taxable interest collected: ${taxable_interest:.2f}")
 
-    if total_interest > 1500:
+    if taxable_interest > 1500:
         res = schedule_b_fillout(interest_forms, INTEREST)
         print(res)
-    return total_interest
+    return [taxable_interest, fed_tax_withheld]
 
 def total_dividends():
     total_ordinary_dividends = 0

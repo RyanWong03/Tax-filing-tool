@@ -9,7 +9,7 @@ def calculate(filing_data):
     line_1a = wages
     line_1z = line_1a #Total wages
 
-    line_2b = federal.forms.schedule_b.taxable_interest() #Interest from 1099-INT forms
+    line_2b = federal.forms.schedule_b.total_interest() #Interest from 1099-INT forms
     
     line_9 = line_1z + line_2b #Total income
 
