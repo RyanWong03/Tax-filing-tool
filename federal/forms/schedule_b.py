@@ -5,6 +5,17 @@ INTEREST = 0
 DIVIDENDS = 1
 
 #Interest from 1099-INT forms
+#Only the fields from the form that are expected from me are implemented.
+#Not implemented:
+# - Box 5: Investment expenses
+# - Box 6: Foreign tax paid
+# - Box 7: Foreign country or U.S. possession
+# - Box 9: Specified private activity bond interest
+# - Box 10: Market discount
+# - Box 11: Bond premium
+# - Box 12: Bond premium on Treasury obligations
+# - Box 13: Bond premium on tax-exempt bond obligations
+# - Box 14: Tax-exempt bond CUSIP no.
 def total_interest():
     taxable_interest = 0
 
@@ -28,7 +39,7 @@ def total_interest():
             fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
             #Exempt federally, taxed by state or local.
             tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
-            
+
             amounts_arr = [amount, bond_interest]
             interest_forms["amounts"].append(amounts_arr)
             taxable_interest += (amount + bond_interest)
