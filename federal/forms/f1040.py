@@ -11,7 +11,8 @@ def calculate(filing_data):
 
     line_2b = federal.forms.schedule_b.total_interest() #Interest from 1099-INT forms
     
-    line_9 = line_1z + line_2b #Total income
+    taxable_interest = line_2b[0]
+    line_9 = line_1z + taxable_interest #Total income
 
     line_11 = line_9 #AGI
 

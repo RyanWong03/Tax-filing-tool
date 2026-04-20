@@ -16,10 +16,13 @@ DIVIDENDS = 1
 # - Box 12: Bond premium on Treasury obligations
 # - Box 13: Bond premium on tax-exempt bond obligations
 # - Box 14: Tax-exempt bond CUSIP no.
+#For boxes 15-17, it's unlikely these will be filled out. If they are, we can handle these manually.
 def total_interest():
     taxable_interest = 0
 
-    print("Please gather all of your 1099-INT forms.")
+    form_avail = input("Please gather all of your 1099-INT forms. If none, enter 'n', otherwise press Enter. ")
+
+    if form_avail == "n": return [0,0]
 
     interest_forms = {
         "payers": [],
@@ -31,16 +34,19 @@ def total_interest():
     while True:
         try:
             payer = input("Enter the name of the payer from a 1099-INT form: ").strip()
-            interest_forms["payers"].append(payer)
-
             amount = library.irs_round(float(input("Enter the total interest from the 1099-INT form (Box 1): ")))
             early_withdrawal_penalty = library.irs_round(float(input("Enter the total early withdrawal penalty from the 1099-INT form (Box 2): ")))
+
+            #Not taxable by state and local, but is taxable federally.
             bond_interest = library.irs_round(float(input("Enter the total interest on U.S. Savings Bonds from the 1099-INT form (Box 3): ")))
+
             fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
+
             #Exempt federally, taxed by state or local.
             tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
 
             amounts_arr = [amount, bond_interest]
+            interest_forms["payers"].append(payer)
             interest_forms["amounts"].append(amounts_arr)
             taxable_interest += (amount + bond_interest)
 
