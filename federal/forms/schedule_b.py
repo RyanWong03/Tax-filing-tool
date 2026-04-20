@@ -84,6 +84,19 @@ def total_interest():
         print(res)
     return form_data
 
+#Dividends from 1099-DIV forms
+#Only the fields from the form that are expected from me are implemented.
+#Not implemented:
+# - Box 5: Investment expenses
+# - Box 6: Foreign tax paid
+# - Box 7: Foreign country or U.S. possession
+# - Box 9: Specified private activity bond interest
+# - Box 10: Market discount
+# - Box 11: Bond premium
+# - Box 12: Bond premium on Treasury obligations
+# - Box 13: Bond premium on tax-exempt bond obligations
+# - Box 14: Tax-exempt bond CUSIP no.
+#For boxes 15-17, it's unlikely these will be filled out. If they are, we can handle these manually.
 def total_dividends():
     total_ordinary_dividends = 0
     total_qualified_dividends = 0
