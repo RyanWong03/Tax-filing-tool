@@ -31,6 +31,14 @@ def total_interest():
         "amounts": [] 
     }
 
+    form_data = {
+        "taxable_interest": 0,
+        "early_withdrawal_penalty": 0,
+        "interest_on_savings_bonds": 0,
+        "federal_tax_withheld": 0,
+        "tax_exempt_interest": 0
+    }
+
     while True:
         try:
             payer = input("Enter the name of the payer from a 1099-INT form: ").strip()
@@ -48,7 +56,13 @@ def total_interest():
             amounts_arr = [amount, bond_interest]
             interest_forms["payers"].append(payer)
             interest_forms["amounts"].append(amounts_arr)
-            taxable_interest += (amount + bond_interest)
+
+            #Populating return dict
+            form_data["taxable_interest"] += (amount + bond_interest)
+            form_data["early_withdrawal_penalty"] += early_withdrawal_penalty
+            form_data["interest_on_savings_bonds"] += bond_interest
+            form_data["federal_tax_withheld"] += fed_tax_withheld
+            form_data["tax_exempt_interest"] += tax_exempt_interest
 
             more_1099_int = None
             while True:
@@ -63,12 +77,12 @@ def total_interest():
         except ValueError:
             print("Invalid input. Please enter a numeric value for interest.")
     
-    print(f"Total taxable interest collected: ${taxable_interest:.2f}")
+    print(f"Total taxable interest collected: ${form_data["taxable_interest"]:.2f}")
 
     if taxable_interest > 1500:
         res = schedule_b_fillout(interest_forms, INTEREST)
         print(res)
-    return [taxable_interest, fed_tax_withheld]
+    return form_data
 
 def total_dividends():
     total_ordinary_dividends = 0

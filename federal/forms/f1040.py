@@ -9,10 +9,11 @@ def calculate(filing_data):
     line_1a = wages
     line_1z = line_1a #Total wages
 
-    line_2b = federal.forms.schedule_b.total_interest() #Interest from 1099-INT forms
+    total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
+    line_2a = total_interest_data["tax_exempt_interest"]
+    line_2b = total_interest_data["taxable_interest"]
     
-    taxable_interest = line_2b[0]
-    line_9 = line_1z + taxable_interest #Total income
+    line_9 = line_1z + line_2b #Total income
 
     line_11 = line_9 #AGI
 
