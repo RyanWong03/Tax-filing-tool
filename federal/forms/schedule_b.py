@@ -42,23 +42,23 @@ def total_interest():
     while True:
         try:
             payer = input("Enter the name of the payer from a 1099-INT form: ").strip()
-            amount = library.irs_round(float(input("Enter the total interest from the 1099-INT form (Box 1): ")))
+            amount = float(input("Enter the total interest from the 1099-INT form (Box 1): "))
             early_withdrawal_penalty = library.irs_round(float(input("Enter the total early withdrawal penalty from the 1099-INT form (Box 2): ")))
 
             #Not taxable by state and local, but is taxable federally.
-            bond_interest = library.irs_round(float(input("Enter the total interest on U.S. Savings Bonds from the 1099-INT form (Box 3): ")))
+            bond_interest = float(input("Enter the total interest on U.S. Savings Bonds from the 1099-INT form (Box 3): "))
 
             fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
 
             #Exempt federally, taxed by state or local.
             tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
 
-            amounts_arr = [amount, bond_interest]
+            amounts_arr = [library.irs_round(amount), library.irs_round(bond_interest)]
             interest_forms["payers"].append(payer)
             interest_forms["amounts"].append(amounts_arr)
 
             #Populating return dict
-            form_data["taxable_interest"] += (amount + bond_interest)
+            form_data["taxable_interest"] += library.irs_round(amount + bond_interest)
             form_data["early_withdrawal_penalty"] += early_withdrawal_penalty
             form_data["interest_on_savings_bonds"] += bond_interest
             form_data["federal_tax_withheld"] += fed_tax_withheld
@@ -117,6 +117,10 @@ def total_dividends():
 
             ordinary_dividends = library.irs_round(float(input("Enter the total ordinary dividends from the 1099-DIV form (Box 1a): ")))
             qualified_dividends = library.irs_round(float(input("Enter the total qualified dividends from the 1099-DIV form (Box 1b): ")))
+            cap_gain_distributions = library.irs_round(float(input("Enter the total capital gain distributions from the 1099-DIV form (Box 2a): ")))
+            #line 2b, must complete Unrecaptured Section 1250 Gain Worksheet in schedule d instructions. line 2b goes onto line 11 of the worksheet.
+            #for worksheet skip lines, 1-10, 12, 14.
+            #here just return line 2b val basically, but later on in schedule D, we need to fill out the worksheet to fill in line 19 of schedule D.
             dividends_arr = [ordinary_dividends, qualified_dividends]
             dividend_forms["amounts"].append(dividends_arr)
             total_ordinary_dividends += ordinary_dividends
