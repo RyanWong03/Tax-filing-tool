@@ -87,11 +87,11 @@ def total_interest():
 #Dividends from 1099-DIV forms
 #Only the fields from the form that are expected from me are implemented.
 #Not implemented:
-# - Box 5: Investment expenses
-# - Box 6: Foreign tax paid
-# - Box 7: Foreign country or U.S. possession
-# - Box 9: Specified private activity bond interest
-# - Box 10: Market discount
+# - Box 2c: Section 1202 gain
+# - Box 2d: Collectibles (28%) gain
+# - Box 2e: Section 897 Ordinary Dividends
+# - Box 2f: Section 897 Capital gain
+# - Box 3: Nondividend distributions
 # - Box 11: Bond premium
 # - Box 12: Bond premium on Treasury obligations
 # - Box 13: Bond premium on tax-exempt bond obligations
@@ -118,9 +118,16 @@ def total_dividends():
             ordinary_dividends = library.irs_round(float(input("Enter the total ordinary dividends from the 1099-DIV form (Box 1a): ")))
             qualified_dividends = library.irs_round(float(input("Enter the total qualified dividends from the 1099-DIV form (Box 1b): ")))
             cap_gain_distributions = library.irs_round(float(input("Enter the total capital gain distributions from the 1099-DIV form (Box 2a): ")))
+            
             #line 2b, must complete Unrecaptured Section 1250 Gain Worksheet in schedule d instructions. line 2b goes onto line 11 of the worksheet.
             #for worksheet skip lines, 1-10, 12, 14.
             #here just return line 2b val basically, but later on in schedule D, we need to fill out the worksheet to fill in line 19 of schedule D.
+            unrecaptured_sec_1250_gain = float(input("Enter the total Unrecaptured Section 1250 gains from the 1099-DIV form (Box 2b): "))
+
+            fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-DIV form (Box 4): ")))
+
+            #box 5, section 199a dividends, need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
+            
             dividends_arr = [ordinary_dividends, qualified_dividends]
             dividend_forms["amounts"].append(dividends_arr)
             total_ordinary_dividends += ordinary_dividends
