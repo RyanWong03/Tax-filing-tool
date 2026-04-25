@@ -12,6 +12,10 @@ def calculate(filing_data):
     total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
     line_2a = total_interest_data["tax_exempt_interest"]
     line_2b = total_interest_data["taxable_interest"]
+
+    total_dividends_data = federal.forms.schedule_b.total_dividends() #From 1099-DIV forms
+    line_3a = total_dividends_data["qualified_dividends"]
+    line_3b = total_dividends_data["ordinary_dividends"]
     
     line_9 = line_1z + line_2b #Total income
 

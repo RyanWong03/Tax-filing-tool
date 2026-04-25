@@ -53,16 +53,17 @@ def total_interest():
             #Exempt federally, taxed by state or local.
             tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
 
+            taxable_interest += amount + bond_interest
             amounts_arr = [library.irs_round(amount), library.irs_round(bond_interest)]
             interest_forms["payers"].append(payer)
             interest_forms["amounts"].append(amounts_arr)
 
             #Populating return dict
-            form_data["taxable_interest"] += library.irs_round(amount + bond_interest)
-            form_data["early_withdrawal_penalty"] += early_withdrawal_penalty
-            form_data["interest_on_savings_bonds"] += bond_interest
-            form_data["federal_tax_withheld"] += fed_tax_withheld
-            form_data["tax_exempt_interest"] += tax_exempt_interest
+            form_data["taxable_interest"] = library.irs_round(amount + bond_interest)
+            form_data["early_withdrawal_penalty"] = early_withdrawal_penalty
+            form_data["interest_on_savings_bonds"] = bond_interest
+            form_data["federal_tax_withheld"] = fed_tax_withheld
+            form_data["tax_exempt_interest"] = tax_exempt_interest
 
             more_1099_int = None
             while True:
@@ -92,14 +93,16 @@ def total_interest():
 # - Box 2e: Section 897 Ordinary Dividends
 # - Box 2f: Section 897 Capital gain
 # - Box 3: Nondividend distributions
-# - Box 11: Bond premium
-# - Box 12: Bond premium on Treasury obligations
-# - Box 13: Bond premium on tax-exempt bond obligations
-# - Box 14: Tax-exempt bond CUSIP no.
-#For boxes 15-17, it's unlikely these will be filled out. If they are, we can handle these manually.
+# - Box 6: Investment expenses  
+# - Box 7: Foreign tax paid
+# - Box 8: Foreign country or U.S. possession
+# - Box 9: Cash liquidation distributions
+# - Box 10: Noncash liquidation distributions
+# - Box 12: Exempt-interest dividends
+# - Box 13: Specified private activity bond dividends
+#For boxes 14-16, it's unlikely these will be filled out. If they are, we can handle these manually.
 def total_dividends():
     total_ordinary_dividends = 0
-    total_qualified_dividends = 0
 
     print("Please gather all of your 1099-DIV forms.")
 
@@ -110,10 +113,17 @@ def total_dividends():
         "amounts": []
     }
 
+    form_data = {
+        "taxable_interest": 0,
+        "early_withdrawal_penalty": 0,
+        "interest_on_savings_bonds": 0,
+        "federal_tax_withheld": 0,
+        "tax_exempt_interest": 0
+    }
+
     while True:
         try:
             payer = input("Enter the name of the payer from a 1099-DIV form: ").strip()
-            dividend_forms["payers"].append(payer)
 
             ordinary_dividends = library.irs_round(float(input("Enter the total ordinary dividends from the 1099-DIV form (Box 1a): ")))
             qualified_dividends = library.irs_round(float(input("Enter the total qualified dividends from the 1099-DIV form (Box 1b): ")))
@@ -122,16 +132,25 @@ def total_dividends():
             #line 2b, must complete Unrecaptured Section 1250 Gain Worksheet in schedule d instructions. line 2b goes onto line 11 of the worksheet.
             #for worksheet skip lines, 1-10, 12, 14.
             #here just return line 2b val basically, but later on in schedule D, we need to fill out the worksheet to fill in line 19 of schedule D.
-            unrecaptured_sec_1250_gain = float(input("Enter the total Unrecaptured Section 1250 gains from the 1099-DIV form (Box 2b): "))
+            unrecaptured_sec_1250_gain = library.irs_round(float(input("Enter the total Unrecaptured Section 1250 gains from the 1099-DIV form (Box 2b): ")))
 
             fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-DIV form (Box 4): ")))
 
             #box 5, section 199a dividends, need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
-            
-            dividends_arr = [ordinary_dividends, qualified_dividends]
+            section_199a_dividends = library.irs_round(float(input("Enter the total Section 199A dividends from the 1099-DIV form (Box 5): ")))
+
+            dividends_arr = [ordinary_dividends]
+            dividend_forms["payers"].append(payer)
             dividend_forms["amounts"].append(dividends_arr)
             total_ordinary_dividends += ordinary_dividends
-            total_qualified_dividends += qualified_dividends
+
+            #Populating return dict
+            form_data["ordinary_dividends"] = ordinary_dividends
+            form_data["qualified_dividends"] = qualified_dividends
+            form_data["cap_gain_distributions"] = cap_gain_distributions
+            form_data["unrecaptured_sec_1250_gain"] = unrecaptured_sec_1250_gain
+            form_data["federal_tax_withheld"] = fed_tax_withheld
+            form_data["section_199a_dividends"] = section_199a_dividends
 
             more_1099_div = None
             while True:
@@ -151,7 +170,8 @@ def total_dividends():
     if total_ordinary_dividends > 1500:
         res = schedule_b_fillout(dividend_forms, DIVIDENDS)
         print(res)
-    return [total_ordinary_dividends, total_qualified_dividends]
+
+    return form_data
 
 def schedule_b_fillout(form_data, section):
     fields = []
