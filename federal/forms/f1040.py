@@ -17,7 +17,7 @@ def calculate(filing_data):
     line_3a = total_dividends_data["qualified_dividends"]
     line_3b = total_dividends_data["ordinary_dividends"]
     
-    line_9 = line_1z + line_2b #Total income
+    line_9 = line_1z + line_2b + line_3b #Total income
 
     line_11 = line_9 #AGI
 
