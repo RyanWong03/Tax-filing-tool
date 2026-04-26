@@ -1,5 +1,44 @@
 import math, library, federal.forms.schedule_b
 
+def analyze_w2_forms():
+    print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
+
+    total_wages = 0
+    total_fed_tax_withheld = 0
+
+    form_data = {
+        "wages": 0,
+        "federal_tax_withheld": 0,
+    }
+
+    while True:
+        try:
+            wages = float(input("Enter the total wages from a W-2 form (Box 1): "))
+            
+            fed_tax_withheld = float(input("Enter the total federal income tax withheld from the W-2 form (Box 2): "))
+
+            total_wages += wages
+            total_fed_tax_withheld += fed_tax_withheld
+
+            more_w2 = None
+            while True:
+                more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
+                if more_w2 == 'no' or more_w2 == 'yes':
+                    break
+                else:
+                    print("Invalid input. Please enter 'yes' or 'no'.")
+            
+            if more_w2 == 'no':
+                break
+        except ValueError:
+            print("Invalid input. Please enter a numeric value for wages.")
+    
+    #Populating return dict
+    form_data["wages"] = library.irs_round(total_wages)
+    form_data["federal_tax_withheld"] = library.irs_round(total_fed_tax_withheld)
+
+    return form_data
+
 def calculate(filing_data):
     constants = filing_data['constants']
     filing_status = filing_data['filing_status']
@@ -45,44 +84,10 @@ def calculate(filing_data):
 
     print(f"Total tax owed: ${line_24:.2f}")
 
-    line_25a = 0 #Federal income tax withheld from W-2s
+    line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
     line_25b = 0 #Federal income tax withheld from 1099s
 
-    while True:
-        try:
-            line_25a += library.irs_round(float(input("Enter the total federal income tax withheld from your W-2 forms (Box 2 on your W-2): ")))
-
-            more_w2 = None
-            while True:
-                more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
-                if more_w2 == 'no' or more_w2 == 'yes':
-                    break
-                else:
-                    print("Invalid input. Please enter 'yes' or 'no'.")
-            
-            if more_w2 == 'no':
-                break
-        except ValueError:
-            print("Invalid input. Please enter a numeric value for federal income tax withheld from W-2s.")
-
     print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
-
-    # while True:
-    #     try:
-    #         line_25b += library.irs_round(float(input("Enter the total federal income tax withheld from your 1099 forms (Box 4 on your 1099): ")))
-            
-    #         more_1099 = None
-    #         while True:
-    #             more_1099 = input("Do you have another 1099 to enter? (yes/no): ").strip().lower()
-    #             if more_1099 == 'no' or more_1099 == 'yes':
-    #                 break
-    #             else:
-    #                 print("Invalid input. Please enter 'yes' or 'no'.")
-            
-    #         if more_1099 == 'no':
-    #             break
-    #     except ValueError:
-    #         print("Invalid input. Please enter a numeric value for federal income tax withheld from 1099s.")
 
     line_25d = line_25a + line_25b
 

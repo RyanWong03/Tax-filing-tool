@@ -26,31 +26,16 @@ def main():
         else:
             break
 
-    wages = 0
-    print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
-    while True:
-        try:
-            wages += library.irs_round(float(input("Enter the total wages from a W-2 form. You will see this on Line 1, "
-            "labeled \"Wages, tips, and other compensation\": ")))
-            
-            more_w2 = None
-            while True:
-                more_w2 = input("Do you have another W-2 to enter? (yes/no): ").strip().lower()
-                if more_w2 == 'no' or more_w2 == 'yes':
-                    break
-                else:
-                    print("Invalid input. Please enter 'yes' or 'no'.")
-            
-            if more_w2 == 'no':
-                break
-        except ValueError:
-            print("Invalid input. Please enter a numeric value for wages.")
+    w2_data = federal.forms.f1040.analyze_w2_forms()
 
+    wages = w2_data["wages"]
+    w2_federal_tax_withheld = w2_data["federal_tax_withheld"]
 
     filing_data = {
         'year': year,
         'filing_status': filing_status,
         'wages': wages,
+        'w2_federal_tax_withheld': w2_federal_tax_withheld,
         'constants': tax_year
     }
 
