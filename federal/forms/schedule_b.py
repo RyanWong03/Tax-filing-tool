@@ -20,10 +20,6 @@ DIVIDENDS = 1
 def total_interest():
     taxable_interest = 0
 
-    form_avail = input("Please gather all of your 1099-INT forms. If none, enter 'n', otherwise press Enter. ")
-
-    if form_avail == "n": return [0,0]
-
     interest_forms = {
         "payers": [],
         #Each index is an array. First index stores the interest from anything except U.S. Savings Bonds.
@@ -38,6 +34,10 @@ def total_interest():
         "federal_tax_withheld": 0,
         "tax_exempt_interest": 0
     }
+
+    form_avail = input("Please gather all of your 1099-INT forms. If none, enter 'n', otherwise press Enter. ")
+
+    if form_avail == "n": return form_data
 
     while True:
         try:
@@ -104,8 +104,6 @@ def total_interest():
 def total_dividends():
     total_ordinary_dividends = 0
 
-    print("Please gather all of your 1099-DIV forms.")
-
     dividend_forms = {
         "payers": [],
         #Each index is an array. First index stores the ordinary dividends.
@@ -114,12 +112,17 @@ def total_dividends():
     }
 
     form_data = {
-        "taxable_interest": 0,
-        "early_withdrawal_penalty": 0,
-        "interest_on_savings_bonds": 0,
+        "ordinary_dividends": 0,
+        "qualified_dividends": 0,
+        "cap_gain_distributions": 0,
+        "unrecaptured_sec_1250_gain": 0,
         "federal_tax_withheld": 0,
-        "tax_exempt_interest": 0
+        "section_199a_dividends": 0
     }
+
+    form_avail = input("Please gather all of your 1099-DIV forms. If none, enter 'n', otherwise press Enter. ")
+
+    if form_avail == "n": return form_data
 
     while True:
         try:
