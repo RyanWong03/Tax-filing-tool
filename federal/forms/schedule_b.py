@@ -1,5 +1,27 @@
 import library
 
+class schedule_b_context:
+    def __init__(self):
+        #These two will be list of dicts. Each dict will have the keys "payer" and "amounts".
+        interest_entries = []
+        dividend_entries = []
+
+        #Interest (mainly from 1099-INT forms, but not limited to 1099-INT forms)
+        taxable_interest = 0
+        early_withdrawal_penalty = 0
+        interest_on_savings_bonds = 0
+        federal_tax_withheld_interest = 0
+        tax_exempt_interest = 0
+
+        #Dividends (mainly from 1099-DIV forms, but not limited to 1099-DIV forms)
+        ordinary_dividends = 0
+        qualified_dividends = 0
+        cap_gain_distributions = 0
+        unrecaptured_sec_1250_gain = 0
+        federal_tax_withheld_dividends = 0
+        section_199a_dividends = 0
+
+
 #Enums for determining which section of Schedule B to fill out
 INTEREST = 0
 DIVIDENDS = 1
