@@ -26,7 +26,7 @@ def main():
         else:
             break
 
-    w2_data = federal.forms.f1040.analyze_w2_forms()
+    w2_data = federal.forms.f1040.collect_w2()
 
     wages = w2_data["wages"]
     w2_federal_tax_withheld = w2_data["federal_tax_withheld"]

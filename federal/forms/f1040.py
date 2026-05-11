@@ -1,6 +1,6 @@
 import math, library, federal.forms.schedule_b
 
-def analyze_w2_forms():
+def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
 
     total_wages = 0
