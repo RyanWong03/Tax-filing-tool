@@ -140,6 +140,53 @@ def collect_1099_div(context: library.tax_context):
         except ValueError:
             print("Invalid input. Please enter a numeric value for dividends.")
     
+def aggregate_schedule_b(context: library.tax_context):
+    #Interest portion
+    context.schedule_b.taxable_interest = library.irs_round(
+        sum(e["amount"] + e["bond_interest"] for e in context.schedule_b.interest_entries)
+    )
+
+    context.schedule_b.early_withdrawal_penalty = library.irs_round(
+        sum(e["early_withdrawal_penalty"] for e in context.schedule_b.interest_entries)
+    )
+
+    context.schedule_b.interest_on_savings_bonds = library.irs_round(
+        sum(e["bond_interest"] for e in context.schedule_b.interest_entries)
+    )
+
+    context.schedule_b.federal_tax_withheld_interest = library.irs_round(
+        sum(e["fed_tax_withheld"] for e in context.schedule_b.interest_entries)
+    )
+
+    context.schedule_b.tax_exempt_interest = library.irs_round(
+        sum(e["tax_exempt_interest"] for e in context.schedule_b.interest_entries)
+    )
+
+    #Dividends portion
+    context.schedule_b.ordinary_dividends = library.irs_round(
+        sum(e["ordinary_dividends"] for e in context.schedule_b.dividend_entries)
+    )
+
+    context.schedule_b.qualified_dividends = library.irs_round(
+        sum(e["qualified_dividends"] for e in context.schedule_b.dividend_entries)
+    )
+
+    context.schedule_b.cap_gain_distributions = library.irs_round(
+        sum(e["cap_gain_distributions"] for e in context.schedule_b.dividend_entries)
+    )
+
+    context.schedule_b.unrecaptured_sec_1250_gain = library.irs_round(
+        sum(e["unrecaptured_sec_1250_gain"] for e in context.schedule_b.dividend_entries)
+    )
+
+    context.schedule_b.federal_tax_withheld_dividends = library.irs_round(
+        sum(e["fed_tax_withheld"] for e in context.schedule_b.dividend_entries)
+    )
+
+    context.schedule_b.section_199a_dividends = library.irs_round(
+        sum(e["section_199a_dividends"] for e in context.schedule_b.dividend_entries)
+    )
+        
 def schedule_b_fillout(context: library.tax_context):
     if context.schedule_b.taxable_interest > 1500:
         print("Part 1: Interest\n")
