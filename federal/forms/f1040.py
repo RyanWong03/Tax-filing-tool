@@ -1,4 +1,4 @@
-import math, library, federal.forms.schedule_b
+import math, library, federal.forms.schedule_b, tax_classes
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
@@ -45,6 +45,20 @@ def calculate(filing_data):
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
+    # #testing
+    # context = tax_classes.tax_context()
+    # federal.forms.schedule_b.collect_1099_int(context)
+    # federal.forms.schedule_b.collect_1099_div(context)
+
+    # federal.forms.schedule_b.aggregate_schedule_b(context)
+
+    # print(f"interest entries: {context.schedule_b.interest_entries}")
+    # print(f"dividend entries: {context.schedule_b.dividend_entries}")
+    # print(f"taxable interest: {context.schedule_b.taxable_interest}")
+    # print(f"ordinary dividends: {context.schedule_b.ordinary_dividends}")
+
+    # federal.forms.schedule_b.schedule_b_fillout(context)
+    # ####### testing end #######
     # line_1a = wages
     # line_1z = line_1a #Total wages
 

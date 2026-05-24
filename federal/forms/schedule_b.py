@@ -188,12 +188,11 @@ def aggregate_schedule_b(context: tax_classes.tax_context):
     )
         
 def schedule_b_fillout(context: tax_classes.tax_context):
-    if context.schedule_b.taxable_interest > 1500:
+    if context.schedule_b.taxable_interest > 1500 or context.schedule_b.ordinary_dividends > 1500:
         print("Part 1: Interest\n")
         for index, entry in enumerate(context.schedule_b.interest_entries):
             print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
 
-    if context.schedule_b.ordinary_dividends > 1500:
         print("Part 2: Dividends\n")
         for index, entry in enumerate(context.schedule_b.dividend_entries):
             print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")
