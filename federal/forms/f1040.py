@@ -45,79 +45,79 @@ def calculate(filing_data):
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
-    line_1a = wages
-    line_1z = line_1a #Total wages
+    # line_1a = wages
+    # line_1z = line_1a #Total wages
 
-    total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
-    line_2a = total_interest_data["tax_exempt_interest"]
-    line_2b = total_interest_data["taxable_interest"]
+    # total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
+    # line_2a = total_interest_data["tax_exempt_interest"]
+    # line_2b = total_interest_data["taxable_interest"]
 
-    total_dividends_data = federal.forms.schedule_b.total_dividends() #From 1099-DIV forms
-    line_3a = total_dividends_data["qualified_dividends"]
-    line_3b = total_dividends_data["ordinary_dividends"]
+    # total_dividends_data = federal.forms.schedule_b.total_dividends() #From 1099-DIV forms
+    # line_3a = total_dividends_data["qualified_dividends"]
+    # line_3b = total_dividends_data["ordinary_dividends"]
     
-    line_9 = line_1z + line_2b + line_3b #Total income
+    # line_9 = line_1z + line_2b + line_3b #Total income
 
-    line_11 = line_9 #AGI
+    # line_11 = line_9 #AGI
 
-    line_12 = standard_deduction
+    # line_12 = standard_deduction
 
-    line_14 = line_12 #AGI - standard deduction
+    # line_14 = line_12 #AGI - standard deduction
 
-    line_15 = max(0, line_11 - line_14) #Taxable income
+    # line_15 = max(0, line_11 - line_14) #Taxable income
 
-    print(f"Taxable income: ${line_15:.2f}")
+    # print(f"Taxable income: ${line_15:.2f}")
 
-    line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
+    # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
 
-    line_17 = 0 #Placeholder 
+    # line_17 = 0 #Placeholder 
 
-    line_18 = line_16 + line_17 
+    # line_18 = line_16 + line_17 
 
-    line_21 = 0 #Placeholder
+    # line_21 = 0 #Placeholder
 
-    line_22 = 0 if line_18 - line_21 < 0 else line_18 - line_21
+    # line_22 = 0 if line_18 - line_21 < 0 else line_18 - line_21
 
-    line_23 = 0 #Placeholder
+    # line_23 = 0 #Placeholder
 
-    line_24 = line_22 + line_23 #Total tax owed
+    # line_24 = line_22 + line_23 #Total tax owed
 
-    print(f"Total tax owed: ${line_24:.2f}")
+    # print(f"Total tax owed: ${line_24:.2f}")
 
-    line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
-    line_25b = 0 #Federal income tax withheld from 1099s
+    # line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
+    # line_25b = 0 #Federal income tax withheld from 1099s
 
-    print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
+    # print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
 
-    line_25d = line_25a + line_25b
+    # line_25d = line_25a + line_25b
 
-    line_26 = 0 #Placeholder
+    # line_26 = 0 #Placeholder
 
-    line_27a = 0 #Placeholder
-    line_28 = 0 #Placeholder
-    line_29 = 0 #Placeholder
-    line_30 = 0 #Placeholder
-    line_31 = 0 #Placeholder
-    line_32 = line_27a + line_28 + line_29 + line_30 + line_31 #Total other payments and refundable credits
+    # line_27a = 0 #Placeholder
+    # line_28 = 0 #Placeholder
+    # line_29 = 0 #Placeholder
+    # line_30 = 0 #Placeholder
+    # line_31 = 0 #Placeholder
+    # line_32 = line_27a + line_28 + line_29 + line_30 + line_31 #Total other payments and refundable credits
 
-    line_33 = line_25d + line_26 + line_32 #Total payments
+    # line_33 = line_25d + line_26 + line_32 #Total payments
 
-    line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
+    # line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
 
-    print(f"Refund amount: ${line_34:.2f}")
+    # print(f"Refund amount: ${line_34:.2f}")
 
-    line_36 = 0 #Default amount
-    while True:
-        line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
-        if(line_36 > line_34):
-            print("You cannot apply more than your total refund to estimated taxes. Please try again.")
-        else:
-            break
+    # line_36 = 0 #Default amount
+    # while True:
+    #     line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
+    #     if(line_36 > line_34):
+    #         print("You cannot apply more than your total refund to estimated taxes. Please try again.")
+    #     else:
+    #         break
 
-    line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
+    # line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
 
-    print(f"Amount of tax owed: ${line_37:.2f}")
-    line_38 = 0 #For the sake of this, ignore penalties...
+    # print(f"Amount of tax owed: ${line_37:.2f}")
+    # line_38 = 0 #For the sake of this, ignore penalties...
 
 def calculate_income_tax(taxable_income, tax_brackets):
     tax = 0
