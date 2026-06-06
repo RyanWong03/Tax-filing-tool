@@ -1,4 +1,4 @@
-import library, tax_classes
+import library, tax_context
 
 class schedule_b_context:
     def __init__(self):
@@ -39,7 +39,7 @@ DIVIDENDS = 1
 # - Box 13: Bond premium on tax-exempt bond obligations
 # - Box 14: Tax-exempt bond CUSIP no.
 #For boxes 15-17, it's unlikely these will be filled out. If they are, we can handle these manually.
-def collect_1099_int(context: tax_classes.tax_context):
+def collect_1099_int(context: tax_context.tax_context):
     form_avail = input("Please gather all of your 1099-INT forms. If none, enter 'n', otherwise press Enter. ")
 
     if form_avail == "n": return
@@ -95,7 +95,7 @@ def collect_1099_int(context: tax_classes.tax_context):
 # - Box 12: Exempt-interest dividends
 # - Box 13: Specified private activity bond dividends
 #For boxes 14-16, it's unlikely these will be filled out. If they are, we can handle these manually.
-def collect_1099_div(context: tax_classes.tax_context):
+def collect_1099_div(context: tax_context.tax_context):
     form_avail = input("Please gather all of your 1099-DIV forms. If none, enter 'n', otherwise press Enter. ")
 
     if form_avail == "n": return
@@ -140,7 +140,7 @@ def collect_1099_div(context: tax_classes.tax_context):
         except ValueError:
             print("Invalid input. Please enter a numeric value for dividends.")
     
-def aggregate_schedule_b(context: tax_classes.tax_context):
+def aggregate_schedule_b(context: tax_context.tax_context):
     #Interest portion
     context.schedule_b.taxable_interest = library.irs_round(
         sum(e["amount"] + e["bond_interest"] for e in context.schedule_b.interest_entries)
@@ -187,7 +187,7 @@ def aggregate_schedule_b(context: tax_classes.tax_context):
         sum(e["section_199a_dividends"] for e in context.schedule_b.dividend_entries)
     )
         
-def schedule_b_fillout(context: tax_classes.tax_context):
+def schedule_b_fillout(context: tax_context.tax_context):
     has_bond_interest = any(e["bond_interest"] > 0 for e in context.schedule_b.interest_entries)
 
     if context.schedule_b.taxable_interest > 1500 or context.schedule_b.ordinary_dividends > 1500 or has_bond_interest:
