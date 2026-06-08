@@ -6,7 +6,7 @@ class form_8949_context:
 
 def collect_1099_b(context: tax_context.tax_context):
     while True:
-        input("Which code(s) are most applicable to you?" \
+        input("Enter the code(s) that are most applicable to you, separated by spaces (Example: A B C)" \
         "(A) Short-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS" \
         "(B) Short-term transactions reported on Form 1099-B without basis reported to the IRS" \
         "(C) Short-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA" \
