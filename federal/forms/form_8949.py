@@ -54,6 +54,8 @@ def collect_1099_b_short_term(context: tax_context.tax_context):
                         "adjustments": wash_sale_loss,  #Can hardcode this for now since we're only handling wash sales. Change in future (if nec.).
                         "adjustment_code": adjustment_code,
                         "gain": gain,
+                        "federal_tax_withheld": federal_tax_withheld,
+                        "state_tax_withheld": state_tax_withheld
                     })
 
                     if accrued_market_discount > 0:
@@ -67,10 +69,13 @@ def collect_1099_b_short_term(context: tax_context.tax_context):
                         })
 
                     while True:
-                        more_1099_b = input("Do you have more 1099-B entries to add? (yes/no): ").strip().lower()
-                        if more_1099_b == 'no' or more_1099_b == 'yes':
+                        more_entries = input(f"Do you have more short term entries for code {code} to add? (yes/no): ").strip().lower()
+                        if more_entries == 'no' or more_entries == 'yes':
                             break
                         else:
                             print("Invalid input. Please enter 'yes' or 'no'.")
+                    
+                    if more_entries == 'no':
+                        break
                 except ValueError:
                     print("Invalid input. Please enter a numeric value for interest.")
