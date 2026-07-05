@@ -1,4 +1,4 @@
-import library, tax_context
+import library
 
 class form_8949_context:
     def __init__(self):
@@ -13,7 +13,7 @@ class form_8949_context:
         }
 
 #Short term stock sales from 1099-B forms
-def collect_1099_b_short_term(context: tax_context.tax_context):
+def collect_1099_b_short_term(context):
     short_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: A B C)" \
     "(A) Short-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS" \
     "(B) Short-term transactions reported on Form 1099-B without basis reported to the IRS" \

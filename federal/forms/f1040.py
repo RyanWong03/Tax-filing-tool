@@ -46,9 +46,11 @@ def calculate(filing_data):
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
     # #testing
-    # context = tax_context.tax_context()
+    #context = tax_context.tax_context()
     # federal.forms.schedule_b.collect_1099_int(context)
     # federal.forms.schedule_b.collect_1099_div(context)
+    #federal.forms.form_8949.collect_1099_b_short_term(context)
+    #print(context.form_8949.short_term_entries)
 
     # federal.forms.schedule_b.aggregate_schedule_b(context)
 
