@@ -16,16 +16,20 @@ class form_8949_context:
 
 #Short term stock sales from 1099-B forms
 def collect_1099_b_short_term(context):
-    short_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: A B C)" \
-    "(A) Short-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS" \
-    "(B) Short-term transactions reported on Form 1099-B without basis reported to the IRS" \
-    "(C) Short-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA")
+    short_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: A B C)\n" \
+    "(A) Short-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS\n" \
+    "(B) Short-term transactions reported on Form 1099-B without basis reported to the IRS\n" \
+    "(C) Short-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA\n" \
+    "If you have no long-term transactions, enter X\n")
     #"(G) Short-term transactions reported on Form(s) 1099-DA showing basis was reported to the IRS " \
     #"(H) Short-term transactions reported on Form(s) 1099-DA showing basis was not reported to the IRS" \
     #"(I) Short-term digital asset transactions not reported to you on Form 1099-DA or Form 1099-B")
     
     codes = short_term_codes.split(' ')
     for code in codes:
+        if code.strip().upper() == 'X':
+            return  #No long-term transactions to enter
+        
         print(f"Enter all sales associated with code {code} from you 1099-B(s): ")
         while True:
             try:
@@ -44,7 +48,8 @@ def collect_1099_b_short_term(context):
                 if wash_sale_loss > 0:
                     adjustment_code = 'W'
                 
-                gain = proceeds - cost_basis + wash_sale_loss
+                #Round to 2 decimal places to avoid floating point issues.
+                gain = round(proceeds - cost_basis + wash_sale_loss, 2)
 
                 context.form_8949.short_term_entries[code.strip().capitalize()].append({
                     "description": description,
@@ -79,19 +84,23 @@ def collect_1099_b_short_term(context):
                 if more_entries == 'no':
                     break
             except ValueError:
-                print("Invalid input. Please enter a numeric value for interest.")
+                print("Invalid input. Please enter a numeric value.")
 
 def collect_1099_b_long_term(context):
-    long_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: D E F)" \
-    "(D) Long-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS" \
-    "(E) Long-term transactions reported on Form(s) 1099-B showing basis was not reported to the IRS" \
-    "(F) SLong-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA")
+    long_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: D E F)\n" \
+    "(D) Long-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS\n" \
+    "(E) Long-term transactions reported on Form(s) 1099-B showing basis was not reported to the IRS\n" \
+    "(F) Long-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA\n" \
+    "If you have no long-term transactions, enter X\n")
     #"(J) Long-term transactions reported on Form(s) 1099-DA showing basis was reported to the IRS " \
     #"(K) Long-term transactions reported on Form(s) 1099-DA showing basis was not reported to the IRS" \
     #"(L) Long-term digital asset transactions not reported to you on Form 1099-DA or Form 1099-B")
     
     codes = long_term_codes.split(' ')
     for code in codes:
+        if code.strip().upper() == 'X':
+            return  #No long-term transactions to enter
+        
         print(f"Enter all sales associated with code {code} from you 1099-B(s): ")
         while True:
             try:
@@ -110,9 +119,10 @@ def collect_1099_b_long_term(context):
                 if wash_sale_loss > 0:
                     adjustment_code = 'W'
                 
-                gain = proceeds - cost_basis + wash_sale_loss
+                #Round to 2 decimal places to avoid floating point issues.
+                gain = round(proceeds - cost_basis + wash_sale_loss, 2)
 
-                context.form_8949.short_term_entries[code.strip().capitalize()].append({
+                context.form_8949.long_term_entries[code.strip().capitalize()].append({
                     "description": description,
                     "date_acquired": date_acquired,
                     "date_sold": date_sold,
@@ -136,7 +146,7 @@ def collect_1099_b_long_term(context):
                     })
 
                 while True:
-                    more_entries = input(f"Do you have more short term entries for code {code} to add? (yes/no): ").strip().lower()
+                    more_entries = input(f"Do you have more long term entries for code {code} to add? (yes/no): ").strip().lower()
                     if more_entries == 'no' or more_entries == 'yes':
                         break
                     else:
@@ -145,4 +155,4 @@ def collect_1099_b_long_term(context):
                 if more_entries == 'no':
                     break
             except ValueError:
-                print("Invalid input. Please enter a numeric value for interest.")
+                print("Invalid input. Please enter a numeric value.")

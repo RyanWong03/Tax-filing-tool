@@ -51,6 +51,8 @@ def calculate(filing_data):
     # federal.forms.schedule_b.collect_1099_div(context)
     #federal.forms.form_8949.collect_1099_b_short_term(context)
     #print(context.form_8949.short_term_entries)
+    #federal.forms.form_8949.collect_1099_b_long_term(context)
+    #print(context.form_8949.long_term_entries)
 
     # federal.forms.schedule_b.aggregate_schedule_b(context)
 
