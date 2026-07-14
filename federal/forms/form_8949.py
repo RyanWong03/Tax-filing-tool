@@ -9,7 +9,9 @@ class form_8949_context:
         }
 
         self.long_term_entries = {
-
+            "D": [],
+            "E": [],
+            "F": [],
         }
 
 #Short term stock sales from 1099-B forms
