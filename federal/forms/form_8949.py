@@ -20,7 +20,7 @@ def collect_1099_b_short_term(context):
     "(A) Short-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS\n" \
     "(B) Short-term transactions reported on Form 1099-B without basis reported to the IRS\n" \
     "(C) Short-term transactions, other than digital asset transactions, not reported to you on Form 1099-B or Form 1099-DA\n" \
-    "If you have no long-term transactions, enter X\n")
+    "If you have no short-term transactions, enter X\n")
     #"(G) Short-term transactions reported on Form(s) 1099-DA showing basis was reported to the IRS " \
     #"(H) Short-term transactions reported on Form(s) 1099-DA showing basis was not reported to the IRS" \
     #"(I) Short-term digital asset transactions not reported to you on Form 1099-DA or Form 1099-B")
