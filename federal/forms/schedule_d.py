@@ -23,6 +23,12 @@ def aggregate_schedule_d(context):
     context.schedule_d.code_e_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.long_term_entries["E"]))
     context.schedule_d.code_f_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.long_term_entries["F"]))
 
-def compute_capital_loss_carryover_worksheet():
-    #TODO
-    pass
+def compute_capital_loss_carryover_worksheet(context):
+    local_app_data_dir = library.get_data_dir()
+    previous_tax_year = context.tax_year - 1
+    user_prev_year_tax_return_file = f"{local_app_data_dir} + /tax_return_{previous_tax_year}.json"
+    worksheet_file = local_app_data_dir + "/capital_loss_carryover_worksheet.json"
+    with open(user_prev_year_tax_return_file, "r") as rf, open(worksheet_file, "w") as wf: 
+        wf.write("{\n")
+        wf.write(f'    "Line 1: ,\n')
+        wf.write("}\n")

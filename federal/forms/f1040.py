@@ -1,4 +1,4 @@
-import math, library, federal.forms.schedule_b, tax_context
+import math, library, federal.forms.schedule_b
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
@@ -40,13 +40,13 @@ def collect_w2():
     return form_data
 
 def calculate(filing_data):
+    context = filing_data['context']
     constants = filing_data['constants']
     filing_status = filing_data['filing_status']
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
     # #testing
-    #context = tax_context.tax_context()
     # federal.forms.schedule_b.collect_1099_int(context)
     # federal.forms.schedule_b.collect_1099_div(context)
     #federal.forms.form_8949.collect_1099_b_short_term(context)
