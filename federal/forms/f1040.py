@@ -46,6 +46,7 @@ def calculate(filing_data):
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
+    prior_year_return = library.load_prior_year_return(context.tax_year)
     # #testing
     # federal.forms.schedule_b.collect_1099_int(context)
     # federal.forms.schedule_b.collect_1099_div(context)
