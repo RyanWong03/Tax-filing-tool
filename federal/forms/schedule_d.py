@@ -1,4 +1,4 @@
-import library
+import library, json
 
 class schedule_d_context:
     def __init__(self):
@@ -27,8 +27,13 @@ def compute_capital_loss_carryover_worksheet(context):
     local_app_data_dir = library.get_data_dir()
     previous_tax_year = context.tax_year - 1
     user_prev_year_tax_return_file = f"{local_app_data_dir} + /tax_return_{previous_tax_year}.json"
-    worksheet_file = local_app_data_dir + "/capital_loss_carryover_worksheet.json"
-    with open(user_prev_year_tax_return_file, "r") as rf, open(worksheet_file, "w") as wf: 
+    worksheet_file = f"{local_app_data_dir} + /capital_loss_carryover_worksheet_{context.tax_year}.json"
+
+    with open(user_prev_year_tax_return_file, "r") as rf:
+        tax_return = json.load(rf)
+
+    with open(worksheet_file, "w") as wf:
         wf.write("{\n")
-        wf.write(f'    "Line 1: ,\n')
+        wf.write(f'    "Tax Year: {context.tax_year},\n')
+        wf.write(f'    "Line 1: {tax_return["form_1040_line_15"]},\n')
         wf.write("}\n")
