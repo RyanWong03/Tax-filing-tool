@@ -1,5 +1,41 @@
 import math, library, federal.forms.schedule_b
 
+class form_1040_context:
+    def __init__(self):
+        self.line_1a = 0
+        self.line_1z = 0
+        self.line_2a = 0
+        self.line_2b = 0
+        self.line_3a = 0
+        self.line_3b = 0
+        self.line_7a = 0
+        self.line_9 = 0
+        self.line_11 = 0
+        self.line_12 = 0
+        self.line_14 = 0
+        self.line_15 = 0
+        self.line_16 = 0
+        self.line_17 = 0
+        self.line_18 = 0
+        self.line_21 = 0
+        self.line_22 = 0
+        self.line_23 = 0
+        self.line_24 = 0
+        self.line_25a = 0
+        self.line_25b = 0
+        self.line_25d = 0
+        self.line_26 = 0
+        self.line_27a = 0
+        self.line_28 = 0
+        self.line_29 = 0
+        self.line_30 = 0
+        self.line_31 = 0
+        self.line_32 = 0
+        self.line_33 = 0
+        self.line_34 = 0
+        self.line_36 = 0
+        self.line_37 = 0
+
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
 
