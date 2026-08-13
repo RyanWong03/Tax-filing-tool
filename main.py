@@ -27,6 +27,8 @@ def main():
             break
 
     context = tax_context.tax_context(year)
+    context.filing_status = filing_status
+    context.constants = tax_year
     w2_data = federal.forms.f1040.collect_w2()
 
     wages = w2_data["wages"]
@@ -34,10 +36,8 @@ def main():
 
     filing_data = {
         'year': year,
-        'filing_status': filing_status,
         'wages': wages,
         'w2_federal_tax_withheld': w2_federal_tax_withheld,
-        'constants': tax_year,
         'context': context
     }
 
