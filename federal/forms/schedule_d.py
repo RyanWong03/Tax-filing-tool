@@ -45,6 +45,8 @@ class schedule_d_context:
 
 
 def aggregate_schedule_d(context, prior_year_return):
+    #TODO Make sure all check boxes are accounted for in this form and if any other forms have make sure to fix those.
+    #can just put true/false as yes/no
     #TODO Did you dispose of any investment(s) in a qualified opportunity fund during the tax year? checkbox
     #Short term
     context.schedule_d.code_a_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.short_term_entries["A"]))
