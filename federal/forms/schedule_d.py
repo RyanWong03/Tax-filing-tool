@@ -129,15 +129,27 @@ def aggregate_schedule_d(context, prior_year_return):
             if line_18 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
                 #For now we are hardcoding that we are not filing form 4952.
                 federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+            else:
+                pass #TODO schedule d tax worksheet
+
+            return #Don't fill lines 21 and 22. We're done here
+        else:
+            #Line 22
+            if context.form_1040.line_3a > 0:
+                federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+            return
 
             
-    if line_16 < 0 or line_16 > 0:
+    if line_16 < 0:
         #line 21
+        
 
     if line_16 == 0:
         context.form_1040.line_7a = 0
 
     #line 22
+    if context.form_1040.line_3a > 0:
+        federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
 
 #Builds the json dump of the capital loss carryover worksheet and saves it to the user's local app data directory.
 def compute_capital_loss_carryover_worksheet(context, prior_year_return):
@@ -234,6 +246,28 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
 
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
+
+def compute_schedule_d_tax_worksheet(context):
+    worksheet = {"tax_year": context.tax_year}
+
+    #Ignore Form 2555 stuff
+
+    line_1 = context.form_1040.line_15
+    line_2 = context.form_1040.line_3a
+    line_3 = 0 #TODO: Implement form 4952
+    line_4 = 0 #TODO: Implement form 4952
+    line_5 = max(line_3 - line_4, 0)
+    line_6 = max(line_2 - line_5, 0)
+
+    schedule_d_line_16 = context.schedule_d.net_short_term_gain_loss + context.schedule_d.net_long_term_gain_loss
+    line_7 = min(context.schedule_d.net_long_term_gain_loss, schedule_d_line_16)
+
+    line_8 = min(line_3, line_4)
+    line_9 = max(line_7 - line_8, 0)
+    line_10 = line_6 + line_9
+
+
+    
 
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)
