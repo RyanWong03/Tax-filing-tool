@@ -2,6 +2,8 @@ import library, json, os, federal.forms.f1040
 
 class schedule_d_context:
     def __init__(self):
+        self.disposal_qof = None
+
         #Short term
         self.code_a_proceeds_total = 0
         self.code_a_cost_basis_total = 0
@@ -41,13 +43,21 @@ class schedule_d_context:
         self.net_long_term_gain_loss = 0
 
         #Part 3
+        self.line_16 = 0
+        self.line_17 = None
+        self.rate_gain_28 = 0
         self.unrecaptured_section_1250_gain = 0
+        self.line_20 = None
+        self.line_21 = 0
+        self.line_22 = None
 
 
 def aggregate_schedule_d(context, prior_year_return):
     #TODO Make sure all check boxes are accounted for in this form and if any other forms have make sure to fix those.
     #can just put true/false as yes/no
-    #TODO Did you dispose of any investment(s) in a qualified opportunity fund during the tax year? checkbox
+
+    context.disposal_qof = False #Hardcode for now since irrevelant for us.
+    
     #Short term
     context.schedule_d.code_a_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.short_term_entries["A"]))
     context.schedule_d.code_b_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.short_term_entries["B"]))
@@ -65,7 +75,7 @@ def aggregate_schedule_d(context, prior_year_return):
     context.schedule_d.code_b_gain_loss_total = library.irs_round(sum(entry["gain"] for entry in context.form_8949.short_term_entries["B"]))
     context.schedule_d.code_c_gain_loss_total = library.irs_round(sum(entry["gain"] for entry in context.form_8949.short_term_entries["C"]))
 
-    #Lines 4 and 5 omitted; irrelevant to us.
+    #TODO #Lines 4 and 5 omitted; irrelevant to us.
 
     #Check if we need to fill out capital loss carryover worksheet. Line 6
     if prior_year_return["schedule_d_line_21"] < 0 \
@@ -96,7 +106,7 @@ def aggregate_schedule_d(context, prior_year_return):
     context.schedule_d.code_e_gain_loss_total = library.irs_round(sum(entry["gain"] for entry in context.form_8949.long_term_entries["E"]))
     context.schedule_d.code_f_gain_loss_total = library.irs_round(sum(entry["gain"] for entry in context.form_8949.long_term_entries["F"]))
 
-    #Lines 11 and 12 omitted; irrelevant to us.
+    #TODO #Lines 11 and 12 omitted; irrelevant to us.
 
     #Line 13
     context.schedule_d.capital_gain_distributions = library.irs_round(sum(entry["cap_gain_distributions"] for entry in context.schedule_b.dividend_entries))
@@ -112,39 +122,47 @@ def aggregate_schedule_d(context, prior_year_return):
 
     #Part 3
 
-    line_16 = context.schedule_d.net_short_term_gain_loss + context.schedule_d.net_long_term_gain_loss
+    context.schedule_d.line_16 = context.schedule_d.net_short_term_gain_loss + context.schedule_d.net_long_term_gain_loss
 
-    if line_16 > 0:
-        context.form_1040.line_7a = line_16
+    if context.schedule_d.line_16 > 0:
+        context.form_1040.line_7a = context.schedule_d.line_16
         #Line 17
-        if context.schedule_d.net_long_term_gain_loss > 0 and line_16 > 0:
+        if context.schedule_d.net_long_term_gain_loss > 0 and context.schedule_d.line_16 > 0:
+            context.schedule_d.line_17 = True
             #Line 18 omitted; irrelevant to us. #TODO 28% rate gain worksheet
-            line_18 = 0 #Hardcoded for line 20
+            context.schedule_d.rate_gain_28 = 0 #Hardcoded for line 20
 
             if context.schedule_b.unrecaptured_sec_1250_gain > 0: #Only relevant case for us.
                 #Line 19
                 compute_unrecaptured_section_1250_gain_worksheet(context)
 
             #Line 20, #TODO handle form 4952
-            if line_18 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
+            if context.schedule_d.rate_gain_28 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
                 #For now we are hardcoding that we are not filing form 4952.
                 federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+                context.schedule_d.line_20 = True
             else:
-                pass #TODO schedule d tax worksheet
+                #TODO schedule d tax worksheet
+                context.schedule_d.line_20 = False
 
             return #Don't fill lines 21 and 22. We're done here
         else:
+            context.schedule_d.line_17 = False
             #Line 22
             if context.form_1040.line_3a > 0:
                 federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
             return
 
-            
-    if line_16 < 0:
+    if context.schedule_d.line_16 < 0:
         #line 21
-        
+        if context.filing_status == "married_filing_separately":
+            default_loss = 1500
+        else:
+            default_loss = 3000
+        context.schedule_d.line_21 = -(min(abs(context.schedule_d.line_16), default_loss))
+        context.form_1040.line_7a = context.schedule_d.line_21
 
-    if line_16 == 0:
+    if context.schedule_d.line_16 == 0:
         context.form_1040.line_7a = 0
 
     #line 22
@@ -247,6 +265,7 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
 
+#TODO Finish this later
 def compute_schedule_d_tax_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
 
