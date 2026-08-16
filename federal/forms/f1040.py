@@ -1,4 +1,45 @@
-import math, library, federal.forms.schedule_b, tax_context
+import math
+import library
+import federal.forms.schedule_b
+import federal.forms.schedule_d
+import os
+import json
+
+class form_1040_context:
+    def __init__(self):
+        self.line_1a = 0
+        self.line_1z = 0
+        self.line_2a = 0
+        self.line_2b = 0
+        self.line_3a = 0
+        self.line_3b = 0
+        self.line_7a = 0
+        self.line_9 = 0
+        self.line_11 = 0
+        self.line_12 = 0
+        self.line_14 = 0
+        self.line_15 = 0
+        self.line_16 = 0
+        self.line_17 = 0
+        self.line_18 = 0
+        self.line_21 = 0
+        self.line_22 = 0
+        self.line_23 = 0
+        self.line_24 = 0
+        self.line_25a = 0
+        self.line_25b = 0
+        self.line_25d = 0
+        self.line_26 = 0
+        self.line_27a = 0
+        self.line_28 = 0
+        self.line_29 = 0
+        self.line_30 = 0
+        self.line_31 = 0
+        self.line_32 = 0
+        self.line_33 = 0
+        self.line_34 = 0
+        self.line_36 = 0
+        self.line_37 = 0
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
@@ -40,13 +81,15 @@ def collect_w2():
     return form_data
 
 def calculate(filing_data):
+    context = filing_data['context']
     constants = filing_data['constants']
-    filing_status = filing_data['filing_status']
+    filing_status = context.filing_status
+    tax_year = context.tax_year
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
+    prior_year_return = library.load_prior_year_return(tax_year)
     # #testing
-    #context = tax_context.tax_context()
     # federal.forms.schedule_b.collect_1099_int(context)
     # federal.forms.schedule_b.collect_1099_div(context)
     #federal.forms.form_8949.collect_1099_b_short_term(context)
@@ -169,9 +212,103 @@ def calculate_income_tax(taxable_income, tax_brackets):
     #They do differ based on filing status.
         
     for lower, upper, rate in tax_brackets:
-            if taxable_income <= lower:
-                break
-            taxable_at_rate = min(taxable_income, upper) - lower
-            tax += taxable_at_rate * rate
+        if taxable_income <= lower:
+            break
+        taxable_at_rate = min(taxable_income, upper) - lower
+        tax += taxable_at_rate * rate
 
     return library.irs_round(tax)
+
+def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
+    worksheet = {"tax_year": context.tax_year}
+
+    #Any lines mentioning Form 2555 are irrelevant to us.
+    
+    line_1 = context.form_1040.line_15
+    line_2 = context.form_1040.line_3a
+
+    if federal.forms.schedule_d.is_filing_schedule_d(context):
+        line_3 = min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)
+        if context.schedule_d.net_long_term_gain_loss <= 0 or context.schedule_d.line_16 <= 0:
+            line_3 = 0
+    else:
+        line_3 = context.form_1040.line_7a
+
+    line_4 = line_2 + line_3
+    line_5 = max(line_1 - line_4, 0)
+
+    if context.filing_status == "single" or context.filing_status == "married_filing_separately":
+        line_6 = 48350
+    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
+        line_6 = 96700
+    elif context.filing_status == "head_of_household":
+        line_6 = 64750
+    else:
+        line_6 = 48350 #Fallback just in case, but this should never happen.
+
+    line_7 = min(line_1, line_6)
+    line_8 = min(line_5, line_7)
+    line_9 = line_7 - line_8 #This is taxed at 0%
+    line_10 = min(line_1, line_4)
+    line_11 = line_9
+    line_12 = line_10 - line_11
+
+    if context.filing_status == "single":
+        line_13 = 533400
+    elif context.filing_status == "married_filing_separately":
+        line_13 = 300000
+    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
+        line_13 = 600050
+    elif context.filing_status == "head_of_household":
+        line_13 = 566700
+    else:
+        line_13 = 533400 #Fallback just in case, but this should never happen
+
+    line_14 = min(line_1, line_13)
+    line_15 = line_5 + line_9
+    line_16 = max(line_14 - line_15, 0)
+    line_17 = min(line_12, line_16)
+    line_18 = line_17 * 0.15
+    line_19 = line_9 + line_17
+    line_20 = line_10 - line_19
+    line_21 = line_20 * 0.2
+    line_22 = calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
+    line_23 = line_18 + line_21 + line_22
+    line_24 = calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
+    line_25 = min(line_23, line_24)
+    context.form_1040.line_16 = line_25
+
+    worksheet["line_1"] = line_1
+    worksheet["line_2"] = line_2
+    worksheet["line_3"] = line_3
+    worksheet["line_4"] = line_4
+    worksheet["line_5"] = line_5
+    worksheet["line_6"] = line_6
+    worksheet["line_7"] = line_7
+    worksheet["line_8"] = line_8
+    worksheet["line_9"] = line_9
+    worksheet["line_10"] = line_10
+    worksheet["line_11"] = line_11
+    worksheet["line_12"] = line_12
+    worksheet["line_13"] = line_13
+    worksheet["line_14"] = line_14
+    worksheet["line_15"] = line_15
+    worksheet["line_16"] = line_16
+    worksheet["line_17"] = line_17
+    worksheet["line_18"] = line_18
+    worksheet["line_19"] = line_19
+    worksheet["line_20"] = line_20
+    worksheet["line_21"] = line_21
+    worksheet["line_22"] = line_22
+    worksheet["line_23"] = line_23
+    worksheet["line_24"] = line_24
+    worksheet["line_25"] = line_25
+
+    save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet)
+
+def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
+    local_app_data_dir = library.get_data_dir()
+    worksheet_file = os.path.join(local_app_data_dir, f"qualified_dividends_and_capital_gain_tax_worksheet_{context.tax_year}.json")
+    
+    with open(worksheet_file, "w") as f:
+        json.dump(worksheet, f, indent=4)
