@@ -1,6 +1,7 @@
 import federal.forms.schedule_b
 import federal.forms.form_8949
 import federal.forms.schedule_d
+import federal.forms.f1040
 
 class tax_context():
     def __init__(self, tax_year):

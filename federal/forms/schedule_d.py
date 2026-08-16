@@ -40,6 +40,7 @@ class schedule_d_context:
         self.code_f_gain_loss_total = 0
 
         self.long_term_capital_loss_carryover = 0
+        self.capital_gain_distributions = 0
         self.net_long_term_gain_loss = 0
 
         #Part 3
@@ -79,7 +80,7 @@ def aggregate_schedule_d(context, prior_year_return):
 
     #Check if we need to fill out capital loss carryover worksheet. Line 6
     if prior_year_return["schedule_d_line_21"] < 0 \
-    and (prior_year_return["schedule_d_line_21"] < prior_year_return["schedule_d_line_16"] \
+    and (prior_year_return["schedule_d_line_21"] > prior_year_return["schedule_d_line_16"] \
         or prior_year_return["form_1040_line_15"] < 0):
         compute_capital_loss_carryover_worksheet(context, prior_year_return)
 
@@ -291,7 +292,7 @@ def compute_schedule_d_tax_worksheet(context):
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)
     has_long_term_sales = any(context.form_8949.long_term_entries[code] for code in context.form_8949.long_term_entries)
-    has_cap_gain_distributions = context.schedule_d.cap_gain_distributions != 0
+    has_cap_gain_distributions = context.schedule_d.capital_gain_distributions != 0
     has_capital_loss_carryover = context.schedule_d.short_term_capital_loss_carryover != 0 or context.schedule_d.long_term_capital_loss_carryover != 0
 
     return has_short_term_sales or has_long_term_sales or has_cap_gain_distributions or has_capital_loss_carryover
