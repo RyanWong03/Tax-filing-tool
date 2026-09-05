@@ -240,14 +240,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_4 = line_2 + line_3
     line_5 = max(line_1 - line_4, 0)
 
-    if context.filing_status == "single" or context.filing_status == "married_filing_separately":
-        line_6 = 48350 #TODO DONT HARDCODE
-    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_6 = 96700 #TODO DONT HARDCODE
-    elif context.filing_status == "head_of_household":
-        line_6 = 64750 #TODO DONT HARDCODE
-    else:
-        line_6 = 48350 #Fallback just in case, but this should never happen. #TODO DONT HARDCODE
+    line_6 = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
 
     line_7 = min(line_1, line_6)
     line_8 = min(line_5, line_7)
@@ -256,16 +249,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_11 = line_9
     line_12 = line_10 - line_11
 
-    if context.filing_status == "single":
-        line_13 = 533400 #TODO DONT HARDCODE
-    elif context.filing_status == "married_filing_separately":
-        line_13 = 300000 #TODO DONT HARDCODE
-    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_13 = 600050 #TODO DONT HARDCODE
-    elif context.filing_status == "head_of_household":
-        line_13 = 566700#TODO DONT HARDCODE
-    else:
-        line_13 = 533400 #Fallback just in case, but this should never happen#TODO DONT HARDCODE
+    line_13 = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
 
     line_14 = min(line_1, line_13)
     line_15 = line_5 + line_9
