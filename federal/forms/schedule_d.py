@@ -1,4 +1,4 @@
-import library, json, os, federal.forms.f1040
+import library, json, os
 
 class schedule_d_context:
     def __init__(self):
