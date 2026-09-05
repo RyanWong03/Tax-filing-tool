@@ -1,8 +1,10 @@
 import tax_context
 import federal.forms.schedule_b as schedule_b
+import federal.tax_years.y_2025 as y_2025
 
 def test_aggregate_zero_interest_entries():
     context = tax_context.tax_context(2025)
+    context.constants = y_2025
     schedule_b.aggregate_schedule_b(context)
     assert context.schedule_b.taxable_interest == 0
 
@@ -40,6 +42,7 @@ def test_aggregate_multiple_interest_entries():
 
 def test_schedule_b_interest_over_threshold():
     context = tax_context.tax_context(2025)
+    context.constants = y_2025
     context.schedule_b.interest_entries.append({
         "payer": "Bank of America",
         "amount": 5234.99,
@@ -54,6 +57,7 @@ def test_schedule_b_interest_over_threshold():
 
 def test_schedule_b_required_for_any_bond_interest():
     context = tax_context.tax_context(2025)
+    context.constants = y_2025
     context.schedule_b.interest_entries.append({
         "payer": "Chase Bank",
         "amount": 50,
@@ -107,6 +111,7 @@ def test_aggregate_multiple_dividend_entries():
 
 def test_schedule_b_dividend_over_threshold():
     context = tax_context.tax_context(2025)
+    context.constants = y_2025
     context.schedule_b.dividend_entries.append({
         "payer": "Fidelity",
         "ordinary_dividends": 25000.73,
@@ -122,6 +127,7 @@ def test_schedule_b_dividend_over_threshold():
 
 def test_schedule_b_not_required_when_all_thresholds_unmet():
     context = tax_context.tax_context(2025)
+    context.constants = y_2025
     context.schedule_b.interest_entries.append({
         "payer": "Chase Bank", "amount": 500, "bond_interest": 0,
         "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": 0
