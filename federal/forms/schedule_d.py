@@ -79,6 +79,7 @@ def aggregate_schedule_d(context, prior_year_return):
     #TODO #Lines 4 and 5 omitted; irrelevant to us.
 
     #Check if we need to fill out capital loss carryover worksheet. Line 6
+    #TODO assign short-term and long-term capital loss carryover variable value here, returned from the worksheet function.
     if prior_year_return["schedule_d_line_21"] < 0 \
     and (prior_year_return["schedule_d_line_21"] > prior_year_return["schedule_d_line_16"] \
         or prior_year_return["form_1040_line_15"] < 0):
@@ -140,18 +141,14 @@ def aggregate_schedule_d(context, prior_year_return):
             #Line 20, #TODO handle form 4952
             if context.schedule_d.rate_gain_28 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
                 #For now we are hardcoding that we are not filing form 4952.
-                federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
                 context.schedule_d.line_20 = True
             else:
-                #TODO schedule d tax worksheet
                 context.schedule_d.line_20 = False
 
             return #Don't fill lines 21 and 22. We're done here
         else:
             context.schedule_d.line_17 = False
-            #Line 22
-            if context.form_1040.line_3a > 0:
-                federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+            context.schedule_d.line_22 = context.form_1040.line_3a > 0
             return
 
     if context.schedule_d.line_16 < 0:
@@ -166,11 +163,11 @@ def aggregate_schedule_d(context, prior_year_return):
     if context.schedule_d.line_16 == 0:
         context.form_1040.line_7a = 0
 
-    #line 22
-    if context.form_1040.line_3a > 0:
-        federal.forms.f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+    context.schedule_d.line_22 = context.form_1040.line_3a > 0
 
 #Builds the json dump of the capital loss carryover worksheet and saves it to the user's local app data directory.
+#TODO: Return short term and long terme capital loss carryover values to be used in the aggregate_schedule_d function.
+#Don't just assign the values in here.
 def compute_capital_loss_carryover_worksheet(context, prior_year_return):
     worksheet = {"tax_year": context.tax_year}
 
@@ -286,6 +283,7 @@ def compute_schedule_d_tax_worksheet(context):
     line_9 = max(line_7 - line_8, 0)
     line_10 = line_6 + line_9
 
+    #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
 
     
 

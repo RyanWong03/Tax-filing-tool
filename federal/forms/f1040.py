@@ -130,6 +130,9 @@ def calculate(filing_data):
     # print(f"Taxable income: ${line_15:.2f}")
 
     # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
+    #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
+    #TODO schedule d tax worksheet
+    #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
 
     # line_17 = 0 #Placeholder 
 
@@ -275,8 +278,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_22 = calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
     line_23 = line_18 + line_21 + line_22
     line_24 = calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
-    line_25 = min(line_23, line_24)
-    context.form_1040.line_16 = line_25
+    line_25 = library.irs_round(min(line_23, line_24))
 
     worksheet["line_1"] = line_1
     worksheet["line_2"] = line_2
@@ -305,6 +307,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     worksheet["line_25"] = line_25
 
     save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet)
+    return line_25
 
 def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
     local_app_data_dir = library.get_data_dir()
