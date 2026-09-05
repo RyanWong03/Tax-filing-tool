@@ -187,10 +187,10 @@ def aggregate_schedule_b(context):
         sum(e["section_199a_dividends"] for e in context.schedule_b.dividend_entries)
     )
 
-#TODO: Don't hardcode 1500, use the constant from tax year file.
 def is_filing_schedule_b(context):
+    threshold = context.constants.SCHEDULE_B_THRESHOLD
     has_bond_interest = any(e["bond_interest"] > 0 for e in context.schedule_b.interest_entries)
-    return context.schedule_b.taxable_interest > 1500 or context.schedule_b.ordinary_dividends > 1500 or has_bond_interest
+    return context.schedule_b.taxable_interest > threshold or context.schedule_b.ordinary_dividends > threshold or has_bond_interest
 
 def schedule_b_fillout(context):
     if is_filing_schedule_b(context):

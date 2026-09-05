@@ -153,11 +153,8 @@ def aggregate_schedule_d(context, prior_year_return):
 
     if context.schedule_d.line_16 < 0:
         #line 21
-        if context.filing_status == "married_filing_separately":
-            default_loss = 1500
-        else:
-            default_loss = 3000
-        context.schedule_d.line_21 = -(min(abs(context.schedule_d.line_16), default_loss))
+        loss_limit = context.constants.SCHEDULE_D_CAPITAL_LOSS_DEDUCTION_LIMIT[context.filing_status]
+        context.schedule_d.line_21 = -(min(abs(context.schedule_d.line_16), loss_limit))
         context.form_1040.line_7a = context.schedule_d.line_21
 
     if context.schedule_d.line_16 == 0:
