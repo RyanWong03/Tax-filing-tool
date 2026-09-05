@@ -141,3 +141,38 @@ def test_schedule_b_not_required_when_all_thresholds_unmet():
 
     schedule_b.aggregate_schedule_b(context)
     assert schedule_b.is_filing_schedule_b(context) == False
+
+def test_aggregate_all_schedule_b_fields():
+    context = tax_context.tax_context(2025)
+    context.schedule_b.interest_entries.append({
+        "payer": "Chase Bank",
+        "amount": 1000,
+        "bond_interest": 200,
+        "early_withdrawal_penalty": 50,
+        "fed_tax_withheld": 75,
+        "tax_exempt_interest": 25
+    })
+    context.schedule_b.dividend_entries.append({
+        "payer": "Fidelity",
+        "ordinary_dividends": 800,
+        "qualified_dividends": 600,
+        "cap_gain_distributions": 150,
+        "unrecaptured_sec_1250_gain": 40,
+        "fed_tax_withheld": 30,
+        "section_199a_dividends": 20
+    })
+
+    schedule_b.aggregate_schedule_b(context)
+
+    assert context.schedule_b.taxable_interest == 1200 # 1000 + 200
+    assert context.schedule_b.interest_on_savings_bonds == 200
+    assert context.schedule_b.early_withdrawal_penalty == 50
+    assert context.schedule_b.federal_tax_withheld_interest == 75
+    assert context.schedule_b.tax_exempt_interest == 25
+
+    assert context.schedule_b.ordinary_dividends == 800
+    assert context.schedule_b.qualified_dividends == 600
+    assert context.schedule_b.cap_gain_distributions == 150
+    assert context.schedule_b.unrecaptured_sec_1250_gain == 40
+    assert context.schedule_b.federal_tax_withheld_dividends == 30
+    assert context.schedule_b.section_199a_dividends == 20
