@@ -27,4 +27,26 @@ TAX_BRACKETS = {
         (501050, 751600, 0.35),
         (751600, float('inf'), 0.37)
     ],
-}   
+}
+
+#Qualified Dividends and Capital Gain Tax Worksheet thresholds for 2025
+QDCGT_ZERO_RATE_MAX = {
+    'single': 48350,
+    'married_filing_jointly': 96700,
+    'head_of_household': 64750,
+}
+
+QDCGT_FIFTEEN_RATE_MAX = {
+    'single': 533400,
+    'married_filing_separately': 300000,
+    'married_filing_jointly': 600050,
+    'head_of_household': 566700,
+}
+
+#Schedule D: Max capital losses deductible in a year against ordinary income
+SCHEDULE_D_CAPITAL_LOSS_DEDUCTION_LIMIT = {
+    'single': 3000, #Includes everything except married filing separately
+    'married_filing_separately': 1500,
+}
+
+SCHEDULE_B_THRESHOLD = 1500

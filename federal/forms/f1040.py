@@ -131,7 +131,7 @@ def calculate(filing_data):
 
     # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
     #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
-    #TODO schedule d tax worksheet
+    #TODO schedule d tax worksheet, raise error for false case for line 20 so we know to implement the form
     #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
 
     # line_17 = 0 #Placeholder 
@@ -241,13 +241,13 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_5 = max(line_1 - line_4, 0)
 
     if context.filing_status == "single" or context.filing_status == "married_filing_separately":
-        line_6 = 48350
+        line_6 = 48350 #TODO DONT HARDCODE
     elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_6 = 96700
+        line_6 = 96700 #TODO DONT HARDCODE
     elif context.filing_status == "head_of_household":
-        line_6 = 64750
+        line_6 = 64750 #TODO DONT HARDCODE
     else:
-        line_6 = 48350 #Fallback just in case, but this should never happen.
+        line_6 = 48350 #Fallback just in case, but this should never happen. #TODO DONT HARDCODE
 
     line_7 = min(line_1, line_6)
     line_8 = min(line_5, line_7)
@@ -257,15 +257,15 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_12 = line_10 - line_11
 
     if context.filing_status == "single":
-        line_13 = 533400
+        line_13 = 533400 #TODO DONT HARDCODE
     elif context.filing_status == "married_filing_separately":
-        line_13 = 300000
+        line_13 = 300000 #TODO DONT HARDCODE
     elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_13 = 600050
+        line_13 = 600050 #TODO DONT HARDCODE
     elif context.filing_status == "head_of_household":
-        line_13 = 566700
+        line_13 = 566700#TODO DONT HARDCODE
     else:
-        line_13 = 533400 #Fallback just in case, but this should never happen
+        line_13 = 533400 #Fallback just in case, but this should never happen#TODO DONT HARDCODE
 
     line_14 = min(line_1, line_13)
     line_15 = line_5 + line_9
