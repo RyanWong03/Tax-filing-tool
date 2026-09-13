@@ -61,11 +61,220 @@ def test_aggregate_zero_entries():
     assert context.schedule_d.line_20 is None
     assert context.schedule_d.line_21 == 0
     # line_22 depends on form_1040.line_3a, which also defaults to 0, so line_22 stays None too
-    assert context.schedule_d.line_22 is None
+    assert context.schedule_d.line_22 is False
 
 def test_aggregate_single_code_a_entry():
     context = tax_context.tax_context(2025)
     context.form_8949.short_term_entries["A"].append({
-        "description": "5 shares of Apple",
-        "date_acquired": "",
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 2000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 1000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
     })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_a_proceeds_total == 3000
+    assert context.schedule_d.code_a_cost_basis_total == 2000
+    assert context.schedule_d.code_a_adjustments_total == 0
+    assert context.schedule_d.code_a_gain_loss_total == 1000
+
+def test_aggregate_multiple_code_a_entries():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["A"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2025",
+        "date_sold": "12/31/2025",
+        "proceeds": 25382.45,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 4930.45,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.short_term_entries["A"].append({
+        "description": "138.13 shares of INTC",
+        "date_acquired": "03/12/2025",
+        "date_sold": "09/12/2025",
+        "proceeds": 6000,
+        "cost_basis": 4000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_a_proceeds_total == 31382
+    assert context.schedule_d.code_a_cost_basis_total == 24452
+    assert context.schedule_d.code_a_adjustments_total == 0
+    assert context.schedule_d.code_a_gain_loss_total == 6930
+
+def test_aggregate_single_code_b_entry():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["B"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 2000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 1000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_b_proceeds_total == 3000
+    assert context.schedule_d.code_b_cost_basis_total == 2000
+    assert context.schedule_d.code_b_adjustments_total == 0
+    assert context.schedule_d.code_b_gain_loss_total == 1000
+
+def test_aggregate_multiple_code_b_entries():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["B"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2025",
+        "date_sold": "12/31/2025",
+        "proceeds": 25382.45,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 4930.45,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.short_term_entries["B"].append({
+        "description": "138.13 shares of INTC",
+        "date_acquired": "03/12/2025",
+        "date_sold": "09/12/2025",
+        "proceeds": 6000,
+        "cost_basis": 4000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_b_proceeds_total == 31382
+    assert context.schedule_d.code_b_cost_basis_total == 24452
+    assert context.schedule_d.code_b_adjustments_total == 0
+    assert context.schedule_d.code_b_gain_loss_total == 6930
+
+def test_aggregate_single_code_c_entry():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["C"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 2000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 1000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_c_proceeds_total == 3000
+    assert context.schedule_d.code_c_cost_basis_total == 2000
+    assert context.schedule_d.code_c_adjustments_total == 0
+    assert context.schedule_d.code_c_gain_loss_total == 1000
+
+def test_aggregate_multiple_code_c_entries():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["C"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2025",
+        "date_sold": "12/31/2025",
+        "proceeds": 25382.45,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 4930.45,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.short_term_entries["C"].append({
+        "description": "138.13 shares of INTC",
+        "date_acquired": "03/12/2025",
+        "date_sold": "09/12/2025",
+        "proceeds": 6000,
+        "cost_basis": 4000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_c_proceeds_total == 31382
+    assert context.schedule_d.code_c_cost_basis_total == 24452
+    assert context.schedule_d.code_c_adjustments_total == 0
+    assert context.schedule_d.code_c_gain_loss_total == 6930
