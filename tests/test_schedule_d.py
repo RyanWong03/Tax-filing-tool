@@ -278,3 +278,75 @@ def test_aggregate_multiple_code_c_entries():
     assert context.schedule_d.code_c_cost_basis_total == 24452
     assert context.schedule_d.code_c_adjustments_total == 0
     assert context.schedule_d.code_c_gain_loss_total == 6930
+
+def test_aggregate_single_code_d_entry():
+    context = tax_context.tax_context(2025)
+    context.form_8949.long_term_entries["D"].append({
+        "description": "55 shares of AMD",
+        "date_acquired": "03/15/2023",
+        "date_sold": "06/01/2025",
+        "proceeds": 5050,
+        "cost_basis": 2033,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 3017,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_d_proceeds_total == 5050
+    assert context.schedule_d.code_d_cost_basis_total == 2033
+    assert context.schedule_d.code_d_adjustments_total == 0
+    assert context.schedule_d.code_d_gain_loss_total == 3017
+
+def test_aggregate_multiple_code_d_entries():
+    context = tax_context.tax_context(2025)
+    context.form_8949.long_term_entries["D"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2020",
+        "date_sold": "12/31/2025",
+        "proceeds": 25382.45,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 4930.45,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.long_term_entries["D"].append({
+        "description": "138.13 shares of INTC",
+        "date_acquired": "03/12/2018",
+        "date_sold": "09/12/2025",
+        "proceeds": 60000,
+        "cost_basis": 40000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 20000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_d_proceeds_total == 85382
+    assert context.schedule_d.code_d_cost_basis_total == 60452
+    assert context.schedule_d.code_d_adjustments_total == 0
+    assert context.schedule_d.code_d_gain_loss_total == 24930
