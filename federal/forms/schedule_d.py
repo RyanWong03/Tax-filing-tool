@@ -88,7 +88,7 @@ def aggregate_schedule_d(context, prior_year_return):
     #Line 7
     context.schedule_d.net_short_term_gain_loss = library.irs_round(context.schedule_d.code_a_gain_loss_total +
                                                                     context.schedule_d.code_b_gain_loss_total +
-                                                                    context.schedule_d.code_c_gain_loss_total +
+                                                                    context.schedule_d.code_c_gain_loss_total -
                                                                     context.schedule_d.short_term_capital_loss_carryover)
 
     #Long term
@@ -119,7 +119,7 @@ def aggregate_schedule_d(context, prior_year_return):
     context.schedule_d.net_long_term_gain_loss = library.irs_round(context.schedule_d.code_d_gain_loss_total +
                                                                    context.schedule_d.code_e_gain_loss_total +
                                                                    context.schedule_d.code_f_gain_loss_total +
-                                                                   context.schedule_d.capital_gain_distributions +
+                                                                   context.schedule_d.capital_gain_distributions -
                                                                    context.schedule_d.long_term_capital_loss_carryover)
 
     #Part 3
