@@ -608,3 +608,117 @@ def test_net_short_term_gain_loss_with_loss_carryover():
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
     assert context.schedule_d.net_short_term_gain_loss == -6000
+
+def test_net_long_term_gain_loss_without_loss_carryover():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.long_term_entries["D"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3394.24,
+        "cost_basis": 5003.39,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -1609.15,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    context.form_8949.long_term_entries["E"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2024",
+        "date_sold": "12/31/2025",
+        "proceeds": 20452,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 0,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    context.form_8949.long_term_entries["F"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 2000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 1000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.net_long_term_gain_loss == -609
+
+def test_net_long_term_gain_loss_with_loss_carryover():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.long_term_entries["D"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 5000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    context.form_8949.long_term_entries["E"].append({
+        "description": "500 shares of TSLA",
+        "date_acquired": "05/23/2024",
+        "date_sold": "12/31/2025",
+        "proceeds": 20452,
+        "cost_basis": 20452,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 0,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    context.form_8949.long_term_entries["F"].append({
+        "description": "5 shares of AAPL",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 2000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 1000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    context.schedule_d.long_term_capital_loss_carryover = 5000
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.net_long_term_gain_loss == -6000
