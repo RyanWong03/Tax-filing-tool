@@ -282,8 +282,6 @@ def compute_schedule_d_tax_worksheet(context):
 
     #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
 
-    
-
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)
     has_long_term_sales = any(context.form_8949.long_term_entries[code] for code in context.form_8949.long_term_entries)

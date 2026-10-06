@@ -797,3 +797,200 @@ def test_aggregate_adjustments_all_codes():
     assert context.schedule_d.code_d_adjustments_total == 300
     assert context.schedule_d.code_e_adjustments_total == 75
     assert context.schedule_d.code_f_adjustments_total == 40
+
+def test_net_loss_over_limit_is_capped():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.short_term_entries["A"].append({
+        "description": "100 shares of XYZ",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 2000,
+        "cost_basis": 12000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -10000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.line_16 == -10000  # the real, uncapped loss
+    assert context.schedule_d.line_21 == -3000   # capped at the $3,000 limit
+    assert context.form_1040.line_7a == -3000    # what actually flows to the 1040
+
+def test_net_loss_under_limit_is_not_capped():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.short_term_entries["A"].append({
+        "description": "100 shares of XYZ",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 3500,
+        "cost_basis": 5000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -1500,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.line_16 == -1500
+    assert context.schedule_d.line_21 == -1500   # under the limit, so unchanged
+    assert context.form_1040.line_7a == -1500
+
+def test_net_gain_with_long_term_gain_takes_line_17_yes_path():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.long_term_entries["D"].append({
+        "description": "50 shares of XYZ",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 8000,
+        "cost_basis": 3000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 5000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.net_long_term_gain_loss == 5000
+    assert context.schedule_d.line_16 == 5000
+    assert context.form_1040.line_7a == 5000
+    assert context.schedule_d.line_17 is True
+    assert context.schedule_d.rate_gain_28 == 0
+    assert context.schedule_d.unrecaptured_section_1250_gain == 0
+    assert context.schedule_d.line_20 is True
+    # Returned early, so the loss-side lines were never reached
+    assert context.schedule_d.line_21 == 0
+    assert context.schedule_d.line_22 is None
+
+def test_net_gain_with_long_term_loss_takes_line_17_no_path():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+
+    context.form_8949.short_term_entries["A"].append({
+        "description": "100 shares of ABC",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 9000,
+        "cost_basis": 3000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 6000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.long_term_entries["D"].append({
+        "description": "20 shares of XYZ",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 5000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.net_short_term_gain_loss == 6000
+    assert context.schedule_d.net_long_term_gain_loss == -2000
+    assert context.schedule_d.line_16 == 4000      # total is still a gain...
+    assert context.form_1040.line_7a == 4000
+    assert context.schedule_d.line_17 is False     # ...but line 15 isn't, so line 17 is No
+    assert context.schedule_d.line_20 is None      # never reached
+    assert context.schedule_d.line_21 == 0
+    assert context.schedule_d.line_22 is False     # line_3a defaults to 0
+
+def test_line_17_no_path_line_22_yes_when_qualified_dividends():
+    # Same setup as above, but with qualified dividends on the 1040
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025
+    context.filing_status = "single"
+    context.form_1040.line_3a = 500
+
+    context.form_8949.short_term_entries["A"].append({
+        "description": "100 shares of ABC",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 9000,
+        "cost_basis": 3000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 6000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+    context.form_8949.long_term_entries["D"].append({
+        "description": "20 shares of XYZ",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 5000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.line_17 is False
+    assert context.schedule_d.line_22 is True
