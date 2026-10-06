@@ -763,3 +763,37 @@ def test_net_long_term_gain_loss_includes_capital_gain_distributions():
 
     assert context.schedule_d.capital_gain_distributions == 500
     assert context.schedule_d.net_long_term_gain_loss == 1500  # 1000 gain + 500 cap gain distributions
+
+def test_aggregate_adjustments_all_codes():
+    context = tax_context.tax_context(2025)
+    context.constants = y_2025          # needed because the net total is a loss,
+    context.filing_status = "single"    # which reaches the loss-limit lookup
+
+    def entry(proceeds, cost_basis, adjustments, gain):
+        return {
+            "description": "test", "date_acquired": "01/01/2024", "date_sold": "06/01/2025",
+            "proceeds": proceeds, "cost_basis": cost_basis,
+            "adjustments": adjustments, "adjustment_code": "W", "gain": gain,
+            "federal_tax_withheld": 0, "state_tax_withheld": 0
+        }
+
+    context.form_8949.short_term_entries["A"].append(entry(800, 1000, 200, 0))
+    context.form_8949.short_term_entries["B"].append(entry(900, 1100, 50, -150))
+    context.form_8949.short_term_entries["C"].append(entry(500, 700, 120, -80))
+    context.form_8949.long_term_entries["D"].append(entry(1000, 1500, 300, -200))
+    context.form_8949.long_term_entries["E"].append(entry(2000, 2200, 75, -125))
+    context.form_8949.long_term_entries["F"].append(entry(600, 900, 40, -260))
+
+    prior_year_return = {
+        "form_1040_line_15": 0, "schedule_d_line_7": 0, "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0, "schedule_d_line_21": 0
+    }
+
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert context.schedule_d.code_a_adjustments_total == 200
+    assert context.schedule_d.code_b_adjustments_total == 50
+    assert context.schedule_d.code_c_adjustments_total == 120
+    assert context.schedule_d.code_d_adjustments_total == 300
+    assert context.schedule_d.code_e_adjustments_total == 75
+    assert context.schedule_d.code_f_adjustments_total == 40
