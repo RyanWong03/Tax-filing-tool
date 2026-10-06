@@ -994,3 +994,79 @@ def test_line_17_no_path_line_22_yes_when_qualified_dividends():
 
     assert context.schedule_d.line_17 is False
     assert context.schedule_d.line_22 is True
+
+def test_filing_schedule_d_required_for_short_term_sale():
+    context = tax_context.tax_context(2025)
+    context.form_8949.short_term_entries["A"].append({
+        "description": "100 shares of ABC",
+        "date_acquired": "01/01/2025",
+        "date_sold": "06/01/2025",
+        "proceeds": 9000,
+        "cost_basis": 3000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": 6000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    assert schedule_d.is_filing_schedule_d(context) == True
+
+def test_filing_schedule_d_required_for_long_term_sale():
+    context = tax_context.tax_context(2025)
+    context.form_8949.long_term_entries["D"].append({
+        "description": "20 shares of XYZ",
+        "date_acquired": "01/01/2024",
+        "date_sold": "06/01/2025",
+        "proceeds": 3000,
+        "cost_basis": 5000,
+        "adjustments": 0,
+        "adjustment_code": None,
+        "gain": -2000,
+        "federal_tax_withheld": 0,
+        "state_tax_withheld": 0
+    })
+
+    assert schedule_d.is_filing_schedule_d(context) == True
+
+def test_filing_schedule_d_required_for_capital_gain_distributions_only():
+    context = tax_context.tax_context(2025)
+    context.schedule_b.dividend_entries.append({
+        "payer": "Fidelity",
+        "ordinary_dividends": 0,
+        "qualified_dividends": 0,
+        "cap_gain_distributions": 500,
+        "unrecaptured_sec_1250_gain": 0,
+        "fed_tax_withheld": 0,
+        "section_199a_dividends": 0
+    })
+
+    prior_year_return = {
+        "form_1040_line_15": 0,
+        "schedule_d_line_7": 0,
+        "schedule_d_line_15": 0,
+        "schedule_d_line_16": 0,
+        "schedule_d_line_21": 0
+    }
+
+    # capital_gain_distributions is only populated by aggregation
+    schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    assert schedule_d.is_filing_schedule_d(context) == True
+
+def test_filing_schedule_d_required_for_short_term_carryover_only():
+    context = tax_context.tax_context(2025)
+    context.schedule_d.short_term_capital_loss_carryover = 2000
+
+    assert schedule_d.is_filing_schedule_d(context) == True
+
+def test_filing_schedule_d_required_for_long_term_carryover_only():
+    context = tax_context.tax_context(2025)
+    context.schedule_d.long_term_capital_loss_carryover = 2000
+
+    assert schedule_d.is_filing_schedule_d(context) == True
+
+def test_filing_schedule_d_not_required_with_no_activity():
+    context = tax_context.tax_context(2025)
+
+    assert schedule_d.is_filing_schedule_d(context) == False
