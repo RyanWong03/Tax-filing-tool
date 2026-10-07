@@ -1,16 +1,23 @@
 import tax_context
 import federal.forms.schedule_d as schedule_d
-import federal.tax_years.y_2025 as y_2025
+import json
+import conftest
+
+YEAR = conftest.YEAR
+TAX_YEAR = conftest.TAX_YEAR
+
+def make_prior_year(line_15, line_7, sd_line_15, line_16, line_21):
+    return {
+        "form_1040_line_15": line_15,
+        "schedule_d_line_7": line_7,
+        "schedule_d_line_15": sd_line_15,
+        "schedule_d_line_16": line_16,
+        "schedule_d_line_21": line_21
+    }
 
 def test_aggregate_zero_entries():
-    context = tax_context.tax_context(2025)
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    context = tax_context.tax_context(YEAR)
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -64,7 +71,7 @@ def test_aggregate_zero_entries():
     assert context.schedule_d.line_22 is False
 
 def test_aggregate_single_code_a_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["A"].append({
         "description": "5 shares of AAPL",
         "date_acquired": "01/01/2025",
@@ -78,13 +85,7 @@ def test_aggregate_single_code_a_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -94,7 +95,7 @@ def test_aggregate_single_code_a_entry():
     assert context.schedule_d.code_a_gain_loss_total == 1000
 
 def test_aggregate_multiple_code_a_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["A"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2025",
@@ -120,13 +121,7 @@ def test_aggregate_multiple_code_a_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -136,7 +131,7 @@ def test_aggregate_multiple_code_a_entries():
     assert context.schedule_d.code_a_gain_loss_total == 6930
 
 def test_aggregate_single_code_b_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["B"].append({
         "description": "5 shares of AAPL",
         "date_acquired": "01/01/2025",
@@ -150,13 +145,7 @@ def test_aggregate_single_code_b_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -166,7 +155,7 @@ def test_aggregate_single_code_b_entry():
     assert context.schedule_d.code_b_gain_loss_total == 1000
 
 def test_aggregate_multiple_code_b_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["B"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2025",
@@ -192,13 +181,7 @@ def test_aggregate_multiple_code_b_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -208,7 +191,7 @@ def test_aggregate_multiple_code_b_entries():
     assert context.schedule_d.code_b_gain_loss_total == 6930
 
 def test_aggregate_single_code_c_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["C"].append({
         "description": "5 shares of AAPL",
         "date_acquired": "01/01/2025",
@@ -222,13 +205,7 @@ def test_aggregate_single_code_c_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -238,7 +215,7 @@ def test_aggregate_single_code_c_entry():
     assert context.schedule_d.code_c_gain_loss_total == 1000
 
 def test_aggregate_multiple_code_c_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["C"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2025",
@@ -264,13 +241,7 @@ def test_aggregate_multiple_code_c_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -280,7 +251,7 @@ def test_aggregate_multiple_code_c_entries():
     assert context.schedule_d.code_c_gain_loss_total == 6930
 
 def test_aggregate_single_code_d_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["D"].append({
         "description": "55 shares of AMD",
         "date_acquired": "03/15/2023",
@@ -294,13 +265,7 @@ def test_aggregate_single_code_d_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -310,7 +275,7 @@ def test_aggregate_single_code_d_entry():
     assert context.schedule_d.code_d_gain_loss_total == 3017
 
 def test_aggregate_multiple_code_d_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["D"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2020",
@@ -336,13 +301,7 @@ def test_aggregate_multiple_code_d_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -352,7 +311,7 @@ def test_aggregate_multiple_code_d_entries():
     assert context.schedule_d.code_d_gain_loss_total == 24930
 
 def test_aggregate_single_code_e_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["E"].append({
         "description": "55 shares of AMD",
         "date_acquired": "03/15/2023",
@@ -366,13 +325,7 @@ def test_aggregate_single_code_e_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -382,7 +335,7 @@ def test_aggregate_single_code_e_entry():
     assert context.schedule_d.code_e_gain_loss_total == 3017
 
 def test_aggregate_multiple_code_e_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["E"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2020",
@@ -408,13 +361,7 @@ def test_aggregate_multiple_code_e_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -424,7 +371,7 @@ def test_aggregate_multiple_code_e_entries():
     assert context.schedule_d.code_e_gain_loss_total == 24930
 
 def test_aggregate_single_code_f_entry():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["F"].append({
         "description": "55 shares of AMD",
         "date_acquired": "03/15/2023",
@@ -438,13 +385,7 @@ def test_aggregate_single_code_f_entry():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -454,7 +395,7 @@ def test_aggregate_single_code_f_entry():
     assert context.schedule_d.code_f_gain_loss_total == 3017
 
 def test_aggregate_multiple_code_f_entries():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["F"].append({
         "description": "500 shares of TSLA",
         "date_acquired": "05/23/2020",
@@ -480,13 +421,7 @@ def test_aggregate_multiple_code_f_entries():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -496,8 +431,8 @@ def test_aggregate_multiple_code_f_entries():
     assert context.schedule_d.code_f_gain_loss_total == 24930
 
 def test_net_short_term_gain_loss_without_loss_carryover():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.short_term_entries["A"].append({
@@ -539,21 +474,15 @@ def test_net_short_term_gain_loss_without_loss_carryover():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
     assert context.schedule_d.net_short_term_gain_loss == -609
 
 def test_net_short_term_gain_loss_with_loss_carryover():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.short_term_entries["A"].append({
@@ -595,13 +524,7 @@ def test_net_short_term_gain_loss_with_loss_carryover():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     context.schedule_d.short_term_capital_loss_carryover = 5000
 
@@ -610,8 +533,8 @@ def test_net_short_term_gain_loss_with_loss_carryover():
     assert context.schedule_d.net_short_term_gain_loss == -6000
 
 def test_net_long_term_gain_loss_without_loss_carryover():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.long_term_entries["D"].append({
@@ -653,21 +576,15 @@ def test_net_long_term_gain_loss_without_loss_carryover():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
     assert context.schedule_d.net_long_term_gain_loss == -609
 
 def test_net_long_term_gain_loss_with_loss_carryover():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.long_term_entries["D"].append({
@@ -709,13 +626,7 @@ def test_net_long_term_gain_loss_with_loss_carryover():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     context.schedule_d.long_term_capital_loss_carryover = 5000
 
@@ -724,8 +635,8 @@ def test_net_long_term_gain_loss_with_loss_carryover():
     assert context.schedule_d.net_long_term_gain_loss == -6000
 
 def test_net_long_term_gain_loss_includes_capital_gain_distributions():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.long_term_entries["D"].append({
@@ -751,13 +662,7 @@ def test_net_long_term_gain_loss_includes_capital_gain_distributions():
         "section_199a_dividends": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -765,8 +670,8 @@ def test_net_long_term_gain_loss_includes_capital_gain_distributions():
     assert context.schedule_d.net_long_term_gain_loss == 1500  # 1000 gain + 500 cap gain distributions
 
 def test_aggregate_adjustments_all_codes():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025          # needed because the net total is a loss,
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR          # needed because the net total is a loss,
     context.filing_status = "single"    # which reaches the loss-limit lookup
 
     def entry(proceeds, cost_basis, adjustments, gain):
@@ -799,8 +704,8 @@ def test_aggregate_adjustments_all_codes():
     assert context.schedule_d.code_f_adjustments_total == 40
 
 def test_net_loss_over_limit_is_capped():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.short_term_entries["A"].append({
@@ -816,13 +721,7 @@ def test_net_loss_over_limit_is_capped():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -831,8 +730,8 @@ def test_net_loss_over_limit_is_capped():
     assert context.form_1040.line_7a == -3000    # what actually flows to the 1040
 
 def test_net_loss_under_limit_is_not_capped():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.short_term_entries["A"].append({
@@ -848,13 +747,7 @@ def test_net_loss_under_limit_is_not_capped():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -863,8 +756,8 @@ def test_net_loss_under_limit_is_not_capped():
     assert context.form_1040.line_7a == -1500
 
 def test_net_gain_with_long_term_gain_takes_line_17_yes_path():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.long_term_entries["D"].append({
@@ -880,13 +773,7 @@ def test_net_gain_with_long_term_gain_takes_line_17_yes_path():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -902,8 +789,8 @@ def test_net_gain_with_long_term_gain_takes_line_17_yes_path():
     assert context.schedule_d.line_22 is None
 
 def test_net_gain_with_long_term_loss_takes_line_17_no_path():
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
 
     context.form_8949.short_term_entries["A"].append({
@@ -931,13 +818,7 @@ def test_net_gain_with_long_term_loss_takes_line_17_no_path():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -952,8 +833,8 @@ def test_net_gain_with_long_term_loss_takes_line_17_no_path():
 
 def test_line_17_no_path_line_22_yes_when_qualified_dividends():
     # Same setup as above, but with qualified dividends on the 1040
-    context = tax_context.tax_context(2025)
-    context.constants = y_2025
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
     context.filing_status = "single"
     context.form_1040.line_3a = 500
 
@@ -982,13 +863,7 @@ def test_line_17_no_path_line_22_yes_when_qualified_dividends():
         "state_tax_withheld": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     schedule_d.aggregate_schedule_d(context, prior_year_return)
 
@@ -996,7 +871,7 @@ def test_line_17_no_path_line_22_yes_when_qualified_dividends():
     assert context.schedule_d.line_22 is True
 
 def test_filing_schedule_d_required_for_short_term_sale():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.short_term_entries["A"].append({
         "description": "100 shares of ABC",
         "date_acquired": "01/01/2025",
@@ -1013,7 +888,7 @@ def test_filing_schedule_d_required_for_short_term_sale():
     assert schedule_d.is_filing_schedule_d(context) == True
 
 def test_filing_schedule_d_required_for_long_term_sale():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.form_8949.long_term_entries["D"].append({
         "description": "20 shares of XYZ",
         "date_acquired": "01/01/2024",
@@ -1030,7 +905,7 @@ def test_filing_schedule_d_required_for_long_term_sale():
     assert schedule_d.is_filing_schedule_d(context) == True
 
 def test_filing_schedule_d_required_for_capital_gain_distributions_only():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.schedule_b.dividend_entries.append({
         "payer": "Fidelity",
         "ordinary_dividends": 0,
@@ -1041,13 +916,7 @@ def test_filing_schedule_d_required_for_capital_gain_distributions_only():
         "section_199a_dividends": 0
     })
 
-    prior_year_return = {
-        "form_1040_line_15": 0,
-        "schedule_d_line_7": 0,
-        "schedule_d_line_15": 0,
-        "schedule_d_line_16": 0,
-        "schedule_d_line_21": 0
-    }
+    prior_year_return = make_prior_year(0, 0, 0, 0, 0)
 
     # capital_gain_distributions is only populated by aggregation
     schedule_d.aggregate_schedule_d(context, prior_year_return)
@@ -1055,18 +924,103 @@ def test_filing_schedule_d_required_for_capital_gain_distributions_only():
     assert schedule_d.is_filing_schedule_d(context) == True
 
 def test_filing_schedule_d_required_for_short_term_carryover_only():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.schedule_d.short_term_capital_loss_carryover = 2000
 
     assert schedule_d.is_filing_schedule_d(context) == True
 
 def test_filing_schedule_d_required_for_long_term_carryover_only():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
     context.schedule_d.long_term_capital_loss_carryover = 2000
 
     assert schedule_d.is_filing_schedule_d(context) == True
 
 def test_filing_schedule_d_not_required_with_no_activity():
-    context = tax_context.tax_context(2025)
+    context = tax_context.tax_context(YEAR)
 
     assert schedule_d.is_filing_schedule_d(context) == False
+
+def make_context():
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
+    context.filing_status = "single"   # carryover makes line 16 a loss, which reads the loss limit
+    return context
+
+def test_carryover_worksheet_not_triggered_with_no_prior_loss(tmp_path):
+    context = make_context()
+    prior = make_prior_year(50000, 0, 0, 0, 0)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    assert context.schedule_d.short_term_capital_loss_carryover == 0
+    assert context.schedule_d.long_term_capital_loss_carryover == 0
+    assert not (tmp_path / "capital_loss_carryover_worksheet_2025.json").exists()
+
+def test_carryover_worksheet_short_term_loss(tmp_path):
+    context = make_context()
+    # Last year: short-term loss of 8000, long-term 0, total 8000, only 3000 deducted
+    prior = make_prior_year(50000, -8000, 0, -8000, -3000)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    # Worksheet by hand: l1=50000, l2=3000, l3=53000, l4=3000,
+    # l5=8000, l6=0, l7=3000, l8=8000-3000=5000. Line 15 is not a loss, so it stops.
+    assert context.schedule_d.short_term_capital_loss_carryover == 5000
+    assert context.schedule_d.long_term_capital_loss_carryover == 0
+    assert context.schedule_d.net_short_term_gain_loss == -5000   # carryover applied as a loss
+
+    saved = json.loads((tmp_path / "capital_loss_carryover_worksheet_2025.json").read_text())
+    assert saved == {
+        "tax_year": 2025,
+        "line_1": 50000, "line_2": 3000, "line_3": 53000, "line_4": 3000,
+        "line_5": 8000, "line_6": 0, "line_7": 3000, "line_8": 5000
+    }
+
+def test_carryover_worksheet_long_term_loss():
+    context = make_context()
+    # Last year: short-term 0, long-term loss of 8000
+    prior = make_prior_year(50000, 0, -8000, -8000, -3000)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    # Worksheet by hand: l4=3000, line 7 not a loss so l5=0.
+    # l9=8000, l10=0, l11=3000-0=3000, l12=3000, l13=8000-3000=5000
+    assert context.schedule_d.short_term_capital_loss_carryover == 0
+    assert context.schedule_d.long_term_capital_loss_carryover == 5000
+    assert context.schedule_d.net_long_term_gain_loss == -5000
+
+def test_carryover_worksheet_short_and_long_term_losses():
+    context = make_context()
+    # Last year: short-term loss 5000, long-term loss 6000, total 11000, only 3000 deducted
+    prior = make_prior_year(50000, -5000, -6000, -11000, -3000)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    # Short-term goes first: l4=3000, l5=5000, l6=0, l7=3000, l8=5000-3000=2000
+    # Long-term: l9=6000, l10=0, l11=max(3000-5000,0)=0, l12=0, l13=6000
+    # The 3000 deduction was used up by the short-term side, so 2000 + 6000 = 8000 carries over.
+    assert context.schedule_d.short_term_capital_loss_carryover == 2000
+    assert context.schedule_d.long_term_capital_loss_carryover == 6000
+
+def test_carryover_triggered_by_negative_taxable_income():
+    context = make_context()
+    # Loss was under the cap (line 21 == line 16), but taxable income would have been negative
+    prior = make_prior_year(-2000, -1500, 0, -1500, -1500)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    # l1=-2000, l2=1500, l3=max(-500,0)=0, l4=min(1500,0)=0
+    # l5=1500, l6=0, l7=0, l8=1500
+    assert context.schedule_d.short_term_capital_loss_carryover == 1500
+    assert context.schedule_d.long_term_capital_loss_carryover == 0
+
+def test_small_loss_fully_deducted_has_no_carryover(tmp_path):
+    context = make_context()
+    # Loss fully deducted (line 21 == line 16) and taxable income was positive
+    prior = make_prior_year(40000, -1500, 0, -1500, -1500)
+
+    schedule_d.aggregate_schedule_d(context, prior)
+
+    assert context.schedule_d.short_term_capital_loss_carryover == 0
+    assert context.schedule_d.long_term_capital_loss_carryover == 0
+    assert not (tmp_path / "capital_loss_carryover_worksheet_2025.json").exists()
