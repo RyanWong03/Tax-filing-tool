@@ -1131,3 +1131,141 @@ def test_1250_worksheet_skipped_when_no_net_long_term_gain():
     assert context.schedule_d.line_17 is False
     assert context.schedule_d.unrecaptured_section_1250_gain == 0
     assert context.schedule_d.line_20 is None
+
+def read_saved(tmp_path, name):
+    with open(tmp_path / f"{name}_{YEAR}.json") as f:
+        return json.load(f)
+
+# ---------- Capital Loss Carryover Worksheet, called directly ----------
+
+def test_carryover_worksheet_short_and_long_term_losses(tmp_path):
+    # Last year: taxable income 50000, ST loss 5000, LT loss 6000, total loss 11000, deducted 3000
+    context = tax_context.tax_context(YEAR)
+    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -5000, -6000, -11000, -3000))
+
+    assert context.schedule_d.short_term_capital_loss_carryover == 2000
+    assert context.schedule_d.long_term_capital_loss_carryover == 6000
+    assert read_saved(tmp_path, "capital_loss_carryover_worksheet") == {
+        "tax_year": YEAR,
+        "line_1": 50000,    # last year's taxable income
+        "line_2": 3000,     # the loss deducted last year
+        "line_3": 53000,    # 50000 + 3000
+        "line_4": 3000,     # smaller of 3000 and 53000
+        "line_5": 5000,     # short-term loss
+        "line_6": 0,        # no long-term gain
+        "line_7": 3000,     # 3000 + 0
+        "line_8": 2000,     # 5000 - 3000 = short-term carryover
+        "line_9": 6000,     # long-term loss
+        "line_10": 0,       # no short-term gain
+        "line_11": 0,       # 3000 - 5000, floored at 0 (deduction all used by short-term)
+        "line_12": 0,       # 0 + 0
+        "line_13": 6000,    # 6000 - 0 = long-term carryover
+    }
+
+def test_carryover_worksheet_long_term_loss_only(tmp_path):
+    # Last year: LT loss 8000, nothing short-term, deducted 3000
+    context = tax_context.tax_context(YEAR)
+    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, 0, -8000, -8000, -3000))
+
+    assert context.schedule_d.short_term_capital_loss_carryover == 0
+    assert context.schedule_d.long_term_capital_loss_carryover == 5000
+    assert read_saved(tmp_path, "capital_loss_carryover_worksheet") == {
+        "tax_year": YEAR,
+        "line_1": 50000,
+        "line_2": 3000,
+        "line_3": 53000,
+        "line_4": 3000,
+        "line_5": 0,        # no short-term loss, so lines 6-8 are skipped
+        "line_9": 8000,     # long-term loss
+        "line_10": 0,
+        "line_11": 3000,    # 3000 - 0: the whole deduction went against long-term
+        "line_12": 3000,    # 0 + 3000
+        "line_13": 5000,    # 8000 - 3000
+    }
+
+def test_carryover_worksheet_short_term_loss_only(tmp_path):
+    # Last year: ST loss 8000, nothing long-term, deducted 3000. Worksheet stops after line 8.
+    context = tax_context.tax_context(YEAR)
+    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -8000, 0, -8000, -3000))
+
+    assert context.schedule_d.short_term_capital_loss_carryover == 5000
+    assert context.schedule_d.long_term_capital_loss_carryover == 0
+    assert read_saved(tmp_path, "capital_loss_carryover_worksheet") == {
+        "tax_year": YEAR,
+        "line_1": 50000,
+        "line_2": 3000,
+        "line_3": 53000,
+        "line_4": 3000,
+        "line_5": 8000,
+        "line_6": 0,
+        "line_7": 3000,
+        "line_8": 5000,     # 8000 - 3000
+    }
+
+# ---------- Unrecaptured Section 1250 Gain Worksheet, called directly ----------
+
+def test_1250_worksheet_with_short_term_loss_and_carryover(tmp_path):
+    context = tax_context.tax_context(YEAR)
+    context.schedule_b.unrecaptured_sec_1250_gain = 1000
+    context.schedule_d.net_short_term_gain_loss = -300
+    context.schedule_d.long_term_capital_loss_carryover = 400
+
+    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+
+    assert context.schedule_d.unrecaptured_section_1250_gain == 300
+    assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {
+        "tax_year": YEAR,
+        "line_10": 0,
+        "line_11": 1000,    # 1250 gain from the 1099-DIV
+        "line_12": 0,
+        "line_13": 1000,    # 0 + 1000 + 0
+        "line_14": 0,
+        "line_15": -300,    # short-term loss
+        "line_16": -400,    # long-term carryover, as a loss
+        "line_17": 700,     # losses combined: 300 + 400, entered as positive
+        "line_18": 300,     # 1000 - 700
+    }
+
+def test_1250_worksheet_losses_larger_than_gain(tmp_path):
+    context = tax_context.tax_context(YEAR)
+    context.schedule_b.unrecaptured_sec_1250_gain = 1000
+    context.schedule_d.net_short_term_gain_loss = -1500
+    context.schedule_d.long_term_capital_loss_carryover = 0
+
+    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+
+    assert context.schedule_d.unrecaptured_section_1250_gain == 0
+    assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {
+        "tax_year": YEAR,
+        "line_10": 0,
+        "line_11": 1000,
+        "line_12": 0,
+        "line_13": 1000,
+        "line_14": 0,
+        "line_15": -1500,
+        "line_16": 0,
+        "line_17": 1500,
+        "line_18": 0,       # 1000 - 1500, floored at 0
+    }
+
+def test_1250_worksheet_short_term_gain_is_not_a_loss(tmp_path):
+    context = tax_context.tax_context(YEAR)
+    context.schedule_b.unrecaptured_sec_1250_gain = 1000
+    context.schedule_d.net_short_term_gain_loss = 500    # a gain, so line 15 is 0
+    context.schedule_d.long_term_capital_loss_carryover = 0
+
+    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+
+    assert context.schedule_d.unrecaptured_section_1250_gain == 1000
+    assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {
+        "tax_year": YEAR,
+        "line_10": 0,
+        "line_11": 1000,
+        "line_12": 0,
+        "line_13": 1000,
+        "line_14": 0,
+        "line_15": 0,
+        "line_16": 0,
+        "line_17": 0,
+        "line_18": 1000,
+    }
