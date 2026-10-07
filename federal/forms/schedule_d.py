@@ -234,7 +234,7 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
     line_13 = line_10 + line_11 + line_12
     line_14 = 0 #Hardcode to 0; irrevelant to us
     line_15 = min(context.schedule_d.net_short_term_gain_loss, 0)
-    line_16 = context.schedule_d.long_term_capital_loss_carryover #Schedule K-1 irrelevant to us.
+    line_16 = -context.schedule_d.long_term_capital_loss_carryover #Schedule K-1 irrelevant to us.
     line_17 = abs(min(line_14 + line_15 + line_16, 0))
     line_18 = max(line_13 - line_17, 0)
 
