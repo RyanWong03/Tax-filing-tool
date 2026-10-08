@@ -1,9 +1,6 @@
 import tax_context
 import federal.forms.schedule_b as schedule_b
-import conftest
-
-YEAR = conftest.YEAR
-TAX_YEAR = conftest.TAX_YEAR
+from conftest import YEAR, TAX_YEAR
 
 def test_aggregate_zero_interest_entries():
     context = tax_context.tax_context(YEAR)

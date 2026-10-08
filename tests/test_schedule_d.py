@@ -1,10 +1,7 @@
 import tax_context
 import federal.forms.schedule_d as schedule_d
 import json
-import conftest
-
-YEAR = conftest.YEAR
-TAX_YEAR = conftest.TAX_YEAR
+from conftest import YEAR, TAX_YEAR
 
 def make_prior_year(line_15, line_7, sd_line_15, line_16, line_21):
     return {
