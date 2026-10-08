@@ -165,3 +165,118 @@ def test_real_constants_dividends_entirely_in_zero_percent_zone():
     # Midpoint 35025: 1192.50 + 12% of 23100 (2772) = 3964.50 -> 3965
     context = make_context(45000, qualified_dividends=10000, constants=TAX_YEAR)
     assert f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context) == 3965
+
+# Simple made-up brackets so the math is easy to check by hand and doesn't depend on any tax year.
+BRACKETS = [
+    (0, 10000, 0.10),
+    (10000, 40000, 0.20),
+    (40000, float("inf"), 0.30),
+]
+
+def test_zero_income_owes_no_tax():
+    assert f1040.calculate_income_tax(0, BRACKETS) == 0
+
+def test_negative_income_owes_no_tax():
+    assert f1040.calculate_income_tax(-500, BRACKETS) == 0
+
+def test_under_3000_uses_25_dollar_slot():
+    # 1000 is in the 1000-1025 slot, midpoint 1012.50. 10% of 1012.50 = 101.25 -> 101
+    assert f1040.calculate_income_tax(1000, BRACKETS) == 101
+
+def test_just_under_3000_uses_25_dollar_slot():
+    # 2999 is in the 2975-3000 slot, midpoint 2987.50. 10% = 298.75 -> 299
+    assert f1040.calculate_income_tax(2999, BRACKETS) == 299
+
+def test_exactly_3000_switches_to_50_dollar_slot():
+    # 3000 is in the 3000-3050 slot, midpoint 3025. 10% = 302.50 -> 303
+    assert f1040.calculate_income_tax(3000, BRACKETS) == 303
+
+def test_income_just_over_first_bracket_edge():
+    # 10000 is in the 10000-10050 slot, midpoint 10025.
+    # 10% of 10000 = 1000, plus 20% of 25 = 5 -> 1005
+    assert f1040.calculate_income_tax(10000, BRACKETS) == 1005
+
+def test_income_from_code_comment_example():
+    # 15019 is in the 15000-15050 slot, midpoint 15025.
+    # 10% of 10000 = 1000, plus 20% of 5025 = 1005 -> 2005
+    assert f1040.calculate_income_tax(15019, BRACKETS) == 2005
+
+def test_just_under_100000_still_uses_slot():
+    # 99999 is in the 99950-100000 slot, midpoint 99975.
+    # 1000 + 20% of 30000 (6000) + 30% of 59975 (17992.50) = 24992.50 -> 24993
+    assert f1040.calculate_income_tax(99999, BRACKETS) == 24993
+
+def test_exactly_100000_uses_no_slot():
+    # No slot at 100000 or above. 1000 + 6000 + 30% of 60000 (18000) = 25000
+    assert f1040.calculate_income_tax(100000, BRACKETS) == 25000
+
+def test_large_income_no_slot():
+    # 1000 + 6000 + 30% of 460000 (138000) = 145000
+    assert f1040.calculate_income_tax(500000, BRACKETS) == 145000
+
+# ---- Real brackets from the year file. Expected values are for 2025 and must be redone for 2026. ----
+
+def test_real_brackets_single_50000():
+    # 50000 is in the 50000-50050 slot, midpoint 50025.
+    # 10% of 11925 = 1192.50; 12% of 36550 = 4386; 22% of 1550 = 341 -> 5919.50 -> 5920
+    assert f1040.calculate_income_tax(50000, TAX_YEAR.TAX_BRACKETS["single"]) == 5920
+
+def test_real_brackets_single_150000():
+    # No slot. 1192.50 + 4386 + 22% of 54875 (12072.50) + 24% of 46650 (11196) = 28847
+    assert f1040.calculate_income_tax(150000, TAX_YEAR.TAX_BRACKETS["single"]) == 28847
+
+def test_real_brackets_single_700000_reaches_top_bracket():
+    # 1192.50 + 4386 + 12072.50 + 22548 + 17032 + 131538.75 + 37% of 73650 (27250.50) = 216020.25 -> 216020
+    assert f1040.calculate_income_tax(700000, TAX_YEAR.TAX_BRACKETS["single"]) == 216020
+
+def test_real_brackets_married_filing_jointly_120000():
+    # No slot. 2385 + 12% of 73100 (8772) + 22% of 23050 (5071) = 16228
+    assert f1040.calculate_income_tax(120000, TAX_YEAR.TAX_BRACKETS["married_filing_jointly"]) == 16228
+
+def type_answers(monkeypatch, answers):
+    """Makes input() return these answers one at a time, in order."""
+    remaining = iter(answers)
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(remaining))
+
+def test_single_w2(monkeypatch):
+    type_answers(monkeypatch, ["50000", "6000", "no"])
+    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+
+def test_two_w2s_are_added_together(monkeypatch):
+    type_answers(monkeypatch, ["50000", "6000", "yes", "20000", "2500", "no"])
+    assert f1040.collect_w2() == {"wages": 70000, "federal_tax_withheld": 8500}
+
+def test_three_w2s_are_added_together(monkeypatch):
+    type_answers(monkeypatch, ["10000", "1000", "yes", "20000", "2000", "yes", "30000", "3000", "no"])
+    assert f1040.collect_w2() == {"wages": 60000, "federal_tax_withheld": 6000}
+
+def test_totals_are_rounded_to_whole_dollars(monkeypatch):
+    # Wages 1000.50 rounds up to 1001. Withholding 100.49 rounds down to 100.
+    type_answers(monkeypatch, ["1000.50", "100.49", "no"])
+    assert f1040.collect_w2() == {"wages": 1001, "federal_tax_withheld": 100}
+
+def test_rounding_happens_on_the_total_not_each_form(monkeypatch):
+    # 0.40 + 0.40 = 0.80 rounds to 1. If each were rounded first, both would round to 0 and the total would be 0.
+    type_answers(monkeypatch, ["10000.40", "0", "yes", "20000.40", "0", "no"])
+    assert f1040.collect_w2() == {"wages": 30001, "federal_tax_withheld": 0}
+
+def test_zero_withholding(monkeypatch):
+    type_answers(monkeypatch, ["30000", "0", "no"])
+    assert f1040.collect_w2() == {"wages": 30000, "federal_tax_withheld": 0}
+
+def test_non_numeric_wages_asks_again(monkeypatch):
+    type_answers(monkeypatch, ["abc", "50000", "6000", "no"])
+    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+
+def test_non_numeric_withholding_asks_again_without_double_counting(monkeypatch):
+    # Wages are typed, then the withholding is bad. The form restarts, and the wages must not be counted twice.
+    type_answers(monkeypatch, ["50000", "xyz", "50000", "6000", "no"])
+    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+
+def test_invalid_yes_no_answer_asks_again(monkeypatch):
+    type_answers(monkeypatch, ["50000", "6000", "maybe", "no"])
+    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+
+def test_yes_no_answer_ignores_spaces_and_capitals(monkeypatch):
+    type_answers(monkeypatch, ["50000", "6000", "  YES ", "10000", "1000", "No"])
+    assert f1040.collect_w2() == {"wages": 60000, "federal_tax_withheld": 7000}
