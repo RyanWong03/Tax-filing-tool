@@ -130,6 +130,9 @@ def calculate(filing_data):
     # print(f"Taxable income: ${line_15:.2f}")
 
     # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
+    #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
+    #TODO schedule d tax worksheet, raise error for false case for line 20 so we know to implement the form
+    #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
 
     # line_17 = 0 #Placeholder 
 
@@ -237,14 +240,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_4 = line_2 + line_3
     line_5 = max(line_1 - line_4, 0)
 
-    if context.filing_status == "single" or context.filing_status == "married_filing_separately":
-        line_6 = 48350
-    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_6 = 96700
-    elif context.filing_status == "head_of_household":
-        line_6 = 64750
-    else:
-        line_6 = 48350 #Fallback just in case, but this should never happen.
+    line_6 = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
 
     line_7 = min(line_1, line_6)
     line_8 = min(line_5, line_7)
@@ -253,16 +249,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_11 = line_9
     line_12 = line_10 - line_11
 
-    if context.filing_status == "single":
-        line_13 = 533400
-    elif context.filing_status == "married_filing_separately":
-        line_13 = 300000
-    elif context.filing_status == "married_filing_jointly" or context.filing_status == "qualifying_surviving_spouse":
-        line_13 = 600050
-    elif context.filing_status == "head_of_household":
-        line_13 = 566700
-    else:
-        line_13 = 533400 #Fallback just in case, but this should never happen
+    line_13 = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
 
     line_14 = min(line_1, line_13)
     line_15 = line_5 + line_9
@@ -275,8 +262,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_22 = calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
     line_23 = line_18 + line_21 + line_22
     line_24 = calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
-    line_25 = min(line_23, line_24)
-    context.form_1040.line_16 = line_25
+    line_25 = library.irs_round(min(line_23, line_24))
 
     worksheet["line_1"] = line_1
     worksheet["line_2"] = line_2
@@ -305,6 +291,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     worksheet["line_25"] = line_25
 
     save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet)
+    return line_25
 
 def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
     local_app_data_dir = library.get_data_dir()
