@@ -63,6 +63,7 @@ def default_prior_year_return(tax_year):
     }
 
 def save_tax_return(tax_year, tax_return):
+    os.makedirs(get_data_dir(), exist_ok=True) 
     path = os.path.join(get_data_dir(), f"tax_return_{tax_year}.json")
     with open(path, "w") as f:
         json.dump(tax_return, f, indent=4)
