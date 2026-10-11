@@ -57,7 +57,7 @@ def aggregate_schedule_d(context, prior_year_return):
     #TODO Make sure all check boxes are accounted for in this form and if any other forms have make sure to fix those.
     #can just put true/false as yes/no
 
-    context.disposal_qof = False #Hardcode for now since irrevelant for us.
+    context.schedule_d.disposal_qof = False #Hardcode for now since irrevelant for us.
     
     #Short term
     context.schedule_d.code_a_proceeds_total = library.irs_round(sum(entry["proceeds"] for entry in context.form_8949.short_term_entries["A"]))
@@ -143,7 +143,9 @@ def aggregate_schedule_d(context, prior_year_return):
                 #For now we are hardcoding that we are not filing form 4952.
                 context.schedule_d.line_20 = True
             else:
-                context.schedule_d.line_20 = False
+                raise NotImplementedError(
+                    "Schedule D Tax Worksheet required (unrecaptured §1250 or 28% gain). Not implemented yet."
+                )
 
             return #Don't fill lines 21 and 22. We're done here
         else:

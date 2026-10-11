@@ -2,6 +2,7 @@ import tax_context
 import federal.forms.schedule_d as schedule_d
 import json
 from conftest import YEAR, TAX_YEAR
+import pytest
 
 def make_prior_year(line_15, line_7, sd_line_15, line_16, line_21):
     return {
@@ -1034,11 +1035,12 @@ def test_1250_gain_kept_when_nothing_offsets_it():
 
     context.schedule_b.unrecaptured_sec_1250_gain = 1000
 
-    schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
+    with pytest.raises(NotImplementedError, match="Schedule D Tax Worksheet"):
+        schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
 
     assert context.schedule_d.line_17 is True
     assert context.schedule_d.unrecaptured_section_1250_gain == 1000
-    assert context.schedule_d.line_20 is False
+    assert context.schedule_d.line_20 is None #used to be false
     assert context.form_1040.line_7a == 5000
 
 def test_1250_gain_reduced_by_short_term_loss():
@@ -1058,11 +1060,12 @@ def test_1250_gain_reduced_by_short_term_loss():
     })
     context.schedule_b.unrecaptured_sec_1250_gain = 1000
 
-    schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
+    with pytest.raises(NotImplementedError, match="Schedule D Tax Worksheet"):
+        schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
 
     assert context.schedule_d.line_16 == 4700
     assert context.schedule_d.unrecaptured_section_1250_gain == 700   # 1000 - 300
-    assert context.schedule_d.line_20 is False
+    assert context.schedule_d.line_20 is None
 
 def test_1250_gain_wiped_out_by_larger_short_term_loss():
     context = tax_context.tax_context(YEAR)
@@ -1099,11 +1102,12 @@ def test_1250_gain_reduced_by_long_term_carryover():
     context.schedule_b.unrecaptured_sec_1250_gain = 1000
     context.schedule_d.long_term_capital_loss_carryover = 400
 
-    schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
+    with pytest.raises(NotImplementedError, match="Schedule D Tax Worksheet"):
+        schedule_d.aggregate_schedule_d(context, make_prior_year(0, 0, 0, 0, 0))
 
     assert context.schedule_d.net_long_term_gain_loss == 4600
     assert context.schedule_d.unrecaptured_section_1250_gain == 600   # 1000 - 400
-    assert context.schedule_d.line_20 is False
+    assert context.schedule_d.line_20 is None # used to be false
 
 def test_1250_worksheet_skipped_when_no_net_long_term_gain():
     context = tax_context.tax_context(YEAR)

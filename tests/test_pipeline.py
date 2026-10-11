@@ -3,6 +3,7 @@ import federal.forms.schedule_b as schedule_b
 import federal.forms.form_8949 as form_8949
 import federal.forms.schedule_d as schedule_d
 from conftest import YEAR
+import pytest
 
 # These tests run the whole path: typed answers -> stored entries -> Schedule B and D totals.
 # They catch a mismatch between what the entry code stores and what the math code reads.
@@ -66,10 +67,12 @@ def test_typed_box_2b_reaches_the_1250_worksheet(monkeypatch):
     form_8949.collect_1099_b_long_term(context)
     schedule_b.collect_1099_div(context)
     schedule_b.aggregate_schedule_b(context)
-    schedule_d.aggregate_schedule_d(context, ZERO_PRIOR)
+
+    with pytest.raises(NotImplementedError, match="Schedule D Tax Worksheet"):
+        schedule_d.aggregate_schedule_d(context, ZERO_PRIOR)
 
     assert context.schedule_d.unrecaptured_section_1250_gain == 500
-    assert context.schedule_d.line_20 is False
+    assert context.schedule_d.line_20 is None
 
 def test_typed_accrued_market_discount_reaches_schedule_b_interest(monkeypatch):
     context = tax_context.tax_context(YEAR)
