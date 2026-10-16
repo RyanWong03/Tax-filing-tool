@@ -4,6 +4,10 @@ import json
 from conftest import YEAR, TAX_YEAR
 import pytest
 
+def read_saved(tmp_path, name):
+    with open(tmp_path / f"{name}_{YEAR}.json") as f:
+        return json.load(f)
+
 def make_prior_year(line_15, line_7, sd_line_15, line_16, line_21):
     return {
         "form_1040_line_15": line_15,
@@ -1133,10 +1137,6 @@ def test_1250_worksheet_skipped_when_no_net_long_term_gain():
     assert context.schedule_d.unrecaptured_section_1250_gain == 0
     assert context.schedule_d.line_20 is None
 
-def read_saved(tmp_path, name):
-    with open(tmp_path / f"{name}_{YEAR}.json") as f:
-        return json.load(f)
-
 # ---------- Capital Loss Carryover Worksheet, called directly ----------
 
 def test_carryover_worksheet_short_and_long_term_losses(tmp_path):
@@ -1270,3 +1270,387 @@ def test_1250_worksheet_short_term_gain_is_not_a_loss(tmp_path):
         "line_17": 0,
         "line_18": 1000,
     }
+
+# Tests for the Schedule D Tax Worksheet (compute_schedule_d_tax_worksheet).
+def run_worksheet(taxable_income, qualified_dividends, net_long_term, net_short_term, section_1250, rate_gain_28=0):
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
+    context.filing_status = "single"
+    context.form_1040.line_15 = taxable_income
+    context.form_1040.line_3a = qualified_dividends
+    context.schedule_d.net_long_term_gain_loss = net_long_term
+    context.schedule_d.net_short_term_gain_loss = net_short_term
+    context.schedule_d.unrecaptured_section_1250_gain = section_1250
+    context.schedule_d.rate_gain_28 = rate_gain_28
+    return schedule_d.compute_schedule_d_tax_worksheet(context)
+
+def check_lines(saved, expected, skipped=()):
+    """Every expected line must match. Lines the worksheet says to skip must be blank/zero or absent."""
+    for line, value in expected.items():
+        assert saved[f"line_{line}"] == value, f"line {line}: expected {value}, got {saved[f'line_{line}']}"
+    for line in skipped:
+        assert not saved.get(f"line_{line}"), f"line {line} should have been skipped"
+
+def test_a_typical_1250_with_qualified_dividends(tmp_path):
+    # Typical case for you: 1250 gain, qualified dividends, income well above the 0% band.
+    # 1250 gain lands entirely in the ordinary brackets (line 39 is 0), so no 25% tax.
+    result = run_worksheet(80000, 2000, 10000, 0, 1000)
+
+    assert result == 11750
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 80000,
+        2: 2000,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 2000,   # qualified dividends, no 4952
+        7: 10000,
+        8: 0,
+        9: 10000,   # min(LT 10000, line 16 10000)
+        10: 12000,
+        11: 1000,   # 28% gain 0 + 1250 gain 1000
+        12: 1000,   # smaller of line 9 and line 11
+        13: 11000,   # line 10 12000 - line 12 1000
+        14: 69000,
+        15: 48350,
+        16: 48350,
+        17: 48350,
+        18: 68000,
+        19: 80000,
+        20: 69000,
+        21: 69000,   # ordinary income, including the 1250 gain
+        22: 0,
+        23: 11000,
+        24: 0,
+        25: 11000,
+        26: 533400,
+        27: 80000,
+        28: 69000,
+        29: 11000,
+        30: 11000,   # 15% band: 11000
+        31: 1650,
+        32: 11000,
+        33: 0,
+        34: 0,
+        35: 1000,
+        36: 81000,
+        37: 80000,
+        38: 1000,
+        39: 0,   # 1250 gain fits under the ordinary brackets
+        40: 0,
+        44: 10100,   # tax on 69000 (slot 69000-69050, midpoint 69025): 10099.50 -> 10100
+        45: 11750,
+        46: 12520,   # tax on 80000 (midpoint 80025): 12519.50 -> 12520
+        47: 11750,   # smaller of 45 and 46
+    }, skipped=[41, 42, 43])
+
+def test_b_1250_gain_taxed_at_25_percent(tmp_path):
+    # High income: the 1250 gain is above the ordinary brackets that would tax it at less than 25%,
+    # so line 39 is positive and line 40 (25%) is used.
+    result = run_worksheet(250000, 0, 20000, 0, 5000)
+
+    assert result == 54163
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 250000,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 20000,
+        8: 0,
+        9: 20000,
+        10: 20000,
+        11: 5000,
+        12: 5000,
+        13: 15000,
+        14: 235000,
+        15: 48350,
+        16: 48350,
+        17: 48350,
+        18: 230000,
+        19: 197300,   # smaller of 250000 and 197300
+        20: 197300,
+        21: 230000,
+        22: 0,
+        23: 15000,
+        24: 0,
+        25: 15000,
+        26: 533400,
+        27: 250000,
+        28: 230000,
+        29: 20000,
+        30: 15000,
+        31: 2250,   # 15% of 15000
+        32: 15000,
+        33: 0,
+        34: 0,
+        35: 5000,
+        36: 250000,
+        37: 250000,
+        38: 0,
+        39: 5000,   # all 5000 of the 1250 gain is taxed at 25%
+        40: 1250,   # 25% of 5000
+        44: 50663,   # tax on 230000, from the brackets (no slot over 100k)
+        45: 54163,
+        46: 57063,   # tax on 250000
+        47: 54163,   # smaller of 45 and 46
+    }, skipped=[41, 42, 43])
+
+def test_c_gain_reaches_the_20_percent_band(tmp_path):
+    # Income over $533,400: part of the gain is taxed at 20% (lines 33 and 34).
+    result = run_worksheet(700000, 0, 100000, 0, 10000)
+
+    assert result == 200047
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 700000,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 100000,
+        8: 0,
+        9: 100000,
+        10: 100000,
+        11: 10000,
+        12: 10000,
+        13: 90000,
+        14: 610000,
+        15: 48350,
+        16: 48350,
+        17: 48350,
+        18: 600000,
+        19: 197300,
+        20: 197300,
+        21: 600000,
+        22: 0,
+        23: 90000,
+        24: 0,
+        25: 90000,
+        26: 533400,
+        27: 533400,
+        28: 600000,
+        29: 0,   # 533400 - 600000, floored at 0, so nothing is left in the 15% band
+        30: 0,
+        31: 0,
+        32: 0,
+        33: 90000,   # all 90000 of the other gain is at 20%
+        34: 18000,   # 20% of 90000
+        35: 10000,
+        36: 700000,
+        37: 700000,
+        38: 0,
+        39: 10000,
+        40: 2500,   # 25% of 10000
+        44: 179547,   # tax on 600000: 179547.25 -> 179547
+        45: 200047,
+        46: 216020,   # tax on 700000: 216020.25 -> 216020
+        47: 200047,   # smaller of 45 and 46
+    }, skipped=[41, 42, 43])
+
+def test_h_short_term_loss_reduces_line_7(tmp_path):
+    # A short-term loss makes Schedule D line 16 smaller than line 15, so line 7 takes line 16.
+    result = run_worksheet(80000, 0, 20000, -5000, 1000)
+
+    assert result == 11540
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 80000,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 15000,   # min(LT 20000, line 16 = 15000)
+        8: 0,
+        9: 15000,   # 15000
+        10: 15000,
+        11: 1000,
+        12: 1000,
+        13: 14000,   # 15000 - 1000
+        14: 66000,
+        15: 48350,
+        16: 48350,
+        17: 48350,
+        18: 65000,
+        19: 80000,
+        20: 66000,
+        21: 66000,
+        22: 0,
+        23: 14000,
+        24: 0,
+        25: 14000,
+        26: 533400,
+        27: 80000,
+        28: 66000,
+        29: 14000,
+        30: 14000,
+        31: 2100,
+        32: 14000,
+        33: 0,
+        34: 0,
+        35: 1000,
+        36: 81000,
+        37: 80000,
+        38: 1000,
+        39: 0,
+        40: 0,
+        44: 9440,   # tax on 66000 (slot 66000-66050, midpoint 66025): 9439.50 -> 9440
+        45: 11540,
+        46: 12520,
+        47: 11540,   # smaller of 45 and 46
+    }, skipped=[41, 42, 43])
+
+def test_i_1250_gain_bigger_than_line_9(tmp_path):
+    # 1250 gain (5000) is larger than line 9 (2000), so line 12 is capped at line 9 and the rest is taxed as ordinary.
+    result = run_worksheet(80000, 0, 3000, -1000, 5000)
+
+    assert result == 12520
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 80000,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 2000,   # min(LT 3000, line 16 = 2000)
+        8: 0,
+        9: 2000,
+        10: 2000,
+        11: 5000,   # 1250 gain 5000
+        12: 2000,   # smaller of line 9 (2000) and line 11 (5000)
+        13: 0,   # line 10 2000 - line 12 2000 = 0
+        14: 80000,
+        15: 48350,
+        16: 48350,
+        17: 48350,
+        18: 78000,
+        19: 80000,
+        20: 80000,
+        21: 80000,
+        22: 0,
+        23: 0,   # nothing left for the 15% and 20% bands
+        24: 0,
+        25: 0,
+        26: 533400,
+        27: 80000,
+        28: 80000,
+        29: 0,
+        30: 0,
+        31: 0,
+        32: 0,
+        33: 0,
+        34: 0,
+        35: 2000,
+        36: 82000,
+        37: 80000,
+        38: 2000,
+        39: 0,
+        40: 0,
+        44: 12520,
+        45: 12520,
+        46: 12520,
+        47: 12520,   # equals regular tax, since no gain is taxed at a lower rate
+    }, skipped=[41, 42, 43])
+
+def test_f_income_under_the_0_percent_limit_skips_to_line_44(tmp_path):
+    # Line 1 (30000) equals line 16 (the smaller of line 1 and 48350), so lines 23-43 are skipped.
+    # The gain is taxed at 0%: line 22 = 4000 of it, the other 26000 is taxed from the table.
+    result = run_worksheet(30000, 0, 5000, 0, 1000)
+
+    assert result == 2885
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 30000,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 5000,
+        8: 0,
+        9: 5000,
+        10: 5000,
+        11: 1000,
+        12: 1000,
+        13: 4000,
+        14: 26000,
+        15: 48350,
+        16: 30000,
+        17: 26000,
+        18: 25000,
+        19: 30000,
+        20: 26000,
+        21: 26000,
+        22: 4000,   # taxed at 0%
+        44: 2885,   # tax on 26000 (slot 26000-26050, midpoint 26025): 2884.50 -> 2885
+        45: 2885,
+        46: 3365,   # tax on 30000 (midpoint 30025): 3364.50 -> 3365
+        47: 2885,   # smaller of 45 and 46
+    }, skipped=[23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43])
+
+def test_g_everything_in_the_0_and_15_percent_bands_skips_to_line_44(tmp_path):
+    # Line 1 (60010) equals line 32 (line 24 + line 30 = 48350 + 11660), so lines 33-43 are skipped,
+    # including the 25% calculation on the 1250 gain.
+    result = run_worksheet(60010, 0, 70000, 0, 2000)
+
+    assert result == 1749
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    check_lines(saved, {
+        1: 60010,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 70000,
+        8: 0,
+        9: 70000,
+        10: 70000,
+        11: 2000,
+        12: 2000,
+        13: 68000,
+        14: 0,
+        15: 48350,
+        16: 48350,
+        17: 0,
+        18: 0,
+        19: 60010,
+        20: 0,
+        21: 0,
+        22: 48350,   # taxed at 0%
+        23: 60010,
+        24: 48350,
+        25: 11660,
+        26: 533400,
+        27: 60010,
+        28: 48350,
+        29: 11660,
+        30: 11660,   # 15% band
+        31: 1749,   # 15% of 11660
+        32: 60010,   # equals line 1
+        44: 0,   # nothing left to tax as ordinary income
+        45: 1749,
+        46: 8120,   # tax on 60010 (midpoint 60025): 8119.50 -> 8120
+        47: 1749,   # smaller of 45 and 46
+    }, skipped=[33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43])
+
+def test_result_is_never_more_than_regular_tax(tmp_path):
+    # Line 47 is the smaller of line 45 and line 46 (the tax with no special rates).
+    run_worksheet(80000, 2000, 10000, 0, 1000)
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    assert saved["line_47"] == min(saved["line_45"], saved["line_46"])
+    assert saved["line_47"] <= saved["line_46"]
+
+def test_28_percent_gain_is_added_to_line_11(tmp_path):
+    # Line 11 adds Schedule D lines 18 (28% gain) and 19 (1250 gain). The 28% worksheet is hardcoded
+    # to 0 for you, so this only checks the line 11 arithmetic: 1000 + 500 = 1500.
+    run_worksheet(80000, 0, 10000, 0, 1000, rate_gain_28=500)
+    saved = read_saved(tmp_path, "schedule_d_tax_worksheet")
+    assert saved["line_11"] == 1500
+    assert saved["line_12"] == 1500
