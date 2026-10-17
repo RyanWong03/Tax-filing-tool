@@ -300,6 +300,14 @@ def compute_schedule_d_tax_worksheet(context):
     line_9 = max(line_7 - line_8, 0)
     line_10 = line_6 + line_9
     line_11 = context.schedule_d.rate_gain_28 + context.schedule_d.unrecaptured_section_1250_gain
+    line_12 = min(line_9, line_11)
+    line_13 = line_10 - line_12
+    line_14 = max(line_1 - line_13, 0)
+    line_15 = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
+    line_16 = min(line_1, line_15)
+    line_17 = min(line_14, line_16)
+    line_18 = max(line_1 - line_10, 0)
+    line_19 = min(line_1, )
 
     #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
 
