@@ -52,7 +52,7 @@ class schedule_d_context:
         self.line_21 = 0
         self.line_22 = None
 
-
+#Main schedule D function. Handles everything in Schedule D form.
 def aggregate_schedule_d(context, prior_year_return):
     #TODO Make sure all check boxes are accounted for in this form and if any other forms have make sure to fix those.
     #can just put true/false as yes/no
@@ -83,7 +83,9 @@ def aggregate_schedule_d(context, prior_year_return):
     if prior_year_return["schedule_d_line_21"] < 0 \
     and (prior_year_return["schedule_d_line_21"] > prior_year_return["schedule_d_line_16"] \
         or prior_year_return["form_1040_line_15"] < 0):
-        compute_capital_loss_carryover_worksheet(context, prior_year_return)
+        (context.schedule_d.short_term_capital_loss_carryover,
+         context.schedule_d.long_term_capital_loss_carryover) \
+        = compute_capital_loss_carryover_worksheet(context, prior_year_return)
 
     #Line 7
     context.schedule_d.net_short_term_gain_loss = library.irs_round(context.schedule_d.code_a_gain_loss_total +
@@ -136,7 +138,7 @@ def aggregate_schedule_d(context, prior_year_return):
 
             if context.schedule_b.unrecaptured_sec_1250_gain > 0: #Only relevant case for us.
                 #Line 19
-                compute_unrecaptured_section_1250_gain_worksheet(context)
+                context.schedule_d.unrecaptured_section_1250_gain = compute_unrecaptured_section_1250_gain_worksheet(context)
 
             #Line 20, #TODO handle form 4952
             if context.schedule_d.rate_gain_28 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
@@ -165,10 +167,16 @@ def aggregate_schedule_d(context, prior_year_return):
     context.schedule_d.line_22 = context.form_1040.line_3a > 0
 
 #Builds the json dump of the capital loss carryover worksheet and saves it to the user's local app data directory.
-#TODO: Return short term and long terme capital loss carryover values to be used in the aggregate_schedule_d function.
-#Don't just assign the values in here.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   prior_year_return: A dictionary containing the prior year's tax return data
+#Return values:
+#   short_term_capital_loss_carryover: The computed short-term capital loss carryover amount.
+#   long_term_capital_loss_carryover: The computed long-term capital loss carryover
 def compute_capital_loss_carryover_worksheet(context, prior_year_return):
     worksheet = {"tax_year": context.tax_year}
+    short_term_capital_loss_carryover = 0
+    long_term_capital_loss_carryover = 0
 
     line_1 = prior_year_return["form_1040_line_15"]
     line_2 = abs(prior_year_return["schedule_d_line_21"])
@@ -192,14 +200,14 @@ def compute_capital_loss_carryover_worksheet(context, prior_year_return):
         worksheet["line_8"] = line_8
 
         if line_8 > 0:
-            context.schedule_d.short_term_capital_loss_carryover = line_8
+            short_term_capital_loss_carryover = line_8
     else:
         line_5 = 0
         worksheet["line_5"] = line_5
 
     if prior_year_return["schedule_d_line_15"] >= 0:
         save_capital_loss_carryover_worksheet(context, worksheet)
-        return
+        return short_term_capital_loss_carryover, long_term_capital_loss_carryover
 
     line_9 = abs(prior_year_return["schedule_d_line_15"])
     line_10 = max(prior_year_return["schedule_d_line_7"], 0)
@@ -214,9 +222,10 @@ def compute_capital_loss_carryover_worksheet(context, prior_year_return):
     worksheet["line_13"] = line_13
 
     if line_13 > 0:
-        context.schedule_d.long_term_capital_loss_carryover = line_13
+        long_term_capital_loss_carryover = line_13
 
     save_capital_loss_carryover_worksheet(context, worksheet)
+    return short_term_capital_loss_carryover, long_term_capital_loss_carryover
     
 def save_capital_loss_carryover_worksheet(context, worksheet):
     local_app_data_dir = library.get_data_dir()
@@ -225,8 +234,14 @@ def save_capital_loss_carryover_worksheet(context, worksheet):
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
 
+#Computes the unrecaptured section 1250 gain worksheet and saves it to the user's local app data directory.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#Return values:
+#   unrecaptured_section_1250_gain: The computed unrecaptured section 1250 gain amount.
 def compute_unrecaptured_section_1250_gain_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
+    unrecaptured_section_1250_gain = 0
 
     #Lines 1-9 omitted; irrelevant to us.
 
@@ -251,9 +266,10 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
     worksheet["line_18"] = line_18
 
     if line_18 > 0:
-        context.schedule_d.unrecaptured_section_1250_gain = line_18
+        unrecaptured_section_1250_gain = line_18
 
     save_unrecaptured_section_1250_gain_worksheet(context, worksheet)
+    return unrecaptured_section_1250_gain
 
 def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
     local_app_data_dir = library.get_data_dir()
@@ -262,12 +278,14 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
 
-#TODO Finish this later
+#Computes the Schedule D Tax Worksheet and saves it to the user's local app data directory.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#Return values:
 def compute_schedule_d_tax_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
 
     #Ignore Form 2555 stuff
-
     line_1 = context.form_1040.line_15
     line_2 = context.form_1040.line_3a
     line_3 = 0 #TODO: Implement form 4952
@@ -281,6 +299,7 @@ def compute_schedule_d_tax_worksheet(context):
     line_8 = min(line_3, line_4)
     line_9 = max(line_7 - line_8, 0)
     line_10 = line_6 + line_9
+    line_11 = context.schedule_d.rate_gain_28 + context.schedule_d.unrecaptured_section_1250_gain
 
     #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
 
@@ -291,3 +310,5 @@ def is_filing_schedule_d(context):
     has_capital_loss_carryover = context.schedule_d.short_term_capital_loss_carryover != 0 or context.schedule_d.long_term_capital_loss_carryover != 0
 
     return has_short_term_sales or has_long_term_sales or has_cap_gain_distributions or has_capital_loss_carryover
+
+#TODO: Implement function that actually fill out the form(s). May not need to fill out the supplemental worksheets.

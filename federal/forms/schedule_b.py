@@ -139,7 +139,8 @@ def collect_1099_div(context):
                 break
         except ValueError:
             print("Invalid input. Please enter a numeric value for dividends.")
-    
+
+#Main function to aggregate all the Schedule B information from the 1099-INT and 1099-DIV forms.
 def aggregate_schedule_b(context):
     #Interest portion
     context.schedule_b.taxable_interest = library.irs_round(
@@ -192,6 +193,7 @@ def is_filing_schedule_b(context):
     has_bond_interest = any(e["bond_interest"] > 0 for e in context.schedule_b.interest_entries)
     return context.schedule_b.taxable_interest > threshold or context.schedule_b.ordinary_dividends > threshold or has_bond_interest
 
+#TODO: Finish this.
 def schedule_b_fillout(context):
     if is_filing_schedule_b(context):
         print("Part 1: Interest\n")

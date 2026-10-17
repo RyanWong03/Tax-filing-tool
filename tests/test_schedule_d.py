@@ -1142,7 +1142,9 @@ def test_1250_worksheet_skipped_when_no_net_long_term_gain():
 def test_carryover_worksheet_short_and_long_term_losses(tmp_path):
     # Last year: taxable income 50000, ST loss 5000, LT loss 6000, total loss 11000, deducted 3000
     context = tax_context.tax_context(YEAR)
-    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -5000, -6000, -11000, -3000))
+    (context.schedule_d.short_term_capital_loss_carryover,
+        context.schedule_d.long_term_capital_loss_carryover) \
+            = schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -5000, -6000, -11000, -3000))
 
     assert context.schedule_d.short_term_capital_loss_carryover == 2000
     assert context.schedule_d.long_term_capital_loss_carryover == 6000
@@ -1166,7 +1168,9 @@ def test_carryover_worksheet_short_and_long_term_losses(tmp_path):
 def test_carryover_worksheet_long_term_loss_only(tmp_path):
     # Last year: LT loss 8000, nothing short-term, deducted 3000
     context = tax_context.tax_context(YEAR)
-    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, 0, -8000, -8000, -3000))
+    (context.schedule_d.short_term_capital_loss_carryover,
+         context.schedule_d.long_term_capital_loss_carryover) \
+     = schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, 0, -8000, -8000, -3000))
 
     assert context.schedule_d.short_term_capital_loss_carryover == 0
     assert context.schedule_d.long_term_capital_loss_carryover == 5000
@@ -1187,7 +1191,9 @@ def test_carryover_worksheet_long_term_loss_only(tmp_path):
 def test_carryover_worksheet_short_term_loss_only(tmp_path):
     # Last year: ST loss 8000, nothing long-term, deducted 3000. Worksheet stops after line 8.
     context = tax_context.tax_context(YEAR)
-    schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -8000, 0, -8000, -3000))
+    (context.schedule_d.short_term_capital_loss_carryover,
+             context.schedule_d.long_term_capital_loss_carryover) \
+         = schedule_d.compute_capital_loss_carryover_worksheet(context, make_prior_year(50000, -8000, 0, -8000, -3000))
 
     assert context.schedule_d.short_term_capital_loss_carryover == 5000
     assert context.schedule_d.long_term_capital_loss_carryover == 0
@@ -1211,7 +1217,7 @@ def test_1250_worksheet_with_short_term_loss_and_carryover(tmp_path):
     context.schedule_d.net_short_term_gain_loss = -300
     context.schedule_d.long_term_capital_loss_carryover = 400
 
-    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+    context.schedule_d.unrecaptured_section_1250_gain = schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
 
     assert context.schedule_d.unrecaptured_section_1250_gain == 300
     assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {
@@ -1233,7 +1239,7 @@ def test_1250_worksheet_losses_larger_than_gain(tmp_path):
     context.schedule_d.net_short_term_gain_loss = -1500
     context.schedule_d.long_term_capital_loss_carryover = 0
 
-    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+    context.schedule_d.unrecaptured_section_1250_gain = schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
 
     assert context.schedule_d.unrecaptured_section_1250_gain == 0
     assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {
@@ -1255,7 +1261,7 @@ def test_1250_worksheet_short_term_gain_is_not_a_loss(tmp_path):
     context.schedule_d.net_short_term_gain_loss = 500    # a gain, so line 15 is 0
     context.schedule_d.long_term_capital_loss_carryover = 0
 
-    schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
+    context.schedule_d.unrecaptured_section_1250_gain = schedule_d.compute_unrecaptured_section_1250_gain_worksheet(context)
 
     assert context.schedule_d.unrecaptured_section_1250_gain == 1000
     assert read_saved(tmp_path, "unrecaptured_section_1250_gain_worksheet") == {

@@ -222,6 +222,11 @@ def calculate_income_tax(taxable_income, tax_brackets):
 
     return library.irs_round(tax)
 
+#Computes the Qualified Dividends and Capital Gain Tax Worksheet and saves it to the user's local app data directory.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#Return values:
+#   line_25: The computed tax amount from the Qualified Dividends and Capital Gain Tax Worksheet.
 def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
 
