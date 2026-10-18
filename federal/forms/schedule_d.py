@@ -1,5 +1,7 @@
 import library, json, os
 
+#TODO Change every form so it just uses worksheet["line_x"] instead of creating local variables for each line.
+
 class schedule_d_context:
     def __init__(self):
         self.disposal_qof = None
