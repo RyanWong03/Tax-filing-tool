@@ -284,32 +284,95 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
 #Return values:
 def compute_schedule_d_tax_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
+    schedule_d_tax_worksheet_lines_1_22(context, worksheet)
 
-    #Ignore Form 2555 stuff
-    line_1 = context.form_1040.line_15
-    line_2 = context.form_1040.line_3a
-    line_3 = 0 #TODO: Implement form 4952
-    line_4 = 0 #TODO: Implement form 4952
-    line_5 = max(line_3 - line_4, 0)
-    line_6 = max(line_2 - line_5, 0)
+    if worksheet["line_1"] != worksheet["line_16"]:
+        schedule_d_tax_worksheet_lines_23_43(context, worksheet)
 
-    schedule_d_line_16 = context.schedule_d.net_short_term_gain_loss + context.schedule_d.net_long_term_gain_loss
-    line_7 = min(context.schedule_d.net_long_term_gain_loss, schedule_d_line_16)
-
-    line_8 = min(line_3, line_4)
-    line_9 = max(line_7 - line_8, 0)
-    line_10 = line_6 + line_9
-    line_11 = context.schedule_d.rate_gain_28 + context.schedule_d.unrecaptured_section_1250_gain
-    line_12 = min(line_9, line_11)
-    line_13 = line_10 - line_12
-    line_14 = max(line_1 - line_13, 0)
-    line_15 = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
-    line_16 = min(line_1, line_15)
-    line_17 = min(line_14, line_16)
-    line_18 = max(line_1 - line_10, 0)
-    line_19 = min(line_1, )
-
+    schedule_d_tax_worksheet_lines_44_47(context, worksheet)
     #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
+
+#Computes the Schedule D Tax Worksheet lines 1 through 22.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 1 through 22.
+def schedule_d_tax_worksheet_lines_1_22(context, worksheet):
+    #Ignore Form 2555 stuff
+    worksheet["line_1"] = context.form_1040.line_15
+    worksheet["line_2"] = context.form_1040.line_3a
+    worksheet["line_3"] = 0 #TODO: Implement form 4952
+    worksheet["line_4"] = 0 #TODO: Implement form 4952
+    worksheet["line_5"] = max(worksheet["line_3"] - worksheet["line_4"], 0)
+    worksheet["line_6"] = max(worksheet["line_2"] - worksheet["line_5"], 0)
+    worksheet["line_7"] = min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)
+
+    worksheet["line_8"] = min(worksheet["line_3"], worksheet["line_4"])
+    worksheet["line_9"] = max(worksheet["line_7"] - worksheet["line_8"], 0)
+    worksheet["line_10"] = worksheet["line_6"] + worksheet["line_9"]
+    worksheet["line_11"] = context.schedule_d.rate_gain_28 + context.schedule_d.unrecaptured_section_1250_gain
+    worksheet["line_12"] = min(worksheet["line_9"], worksheet["line_11"])
+    worksheet["line_13"] = worksheet["line_10"] - worksheet["line_12"]
+    worksheet["line_14"] = max(worksheet["line_1"] - worksheet["line_13"], 0)
+    worksheet["line_15"] = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
+    worksheet["line_16"] = min(worksheet["line_1"], worksheet["line_15"])
+    worksheet["line_17"] = min(worksheet["line_14"], worksheet["line_16"])
+    worksheet["line_18"] = max(worksheet["line_1"] - worksheet["line_10"], 0)
+
+    tax_rate_24_percent = context.constants.TAX_BRACKETS[context.filing_status][3] #24% tax rate
+    if tax_rate_24_percent[2] != 0.24:
+        raise ValueError(f"Tax rates have changed, expected 0.24 for 24% tax rate, got {tax_rate_24_percent[2]}")
+    
+    worksheet["line_19"] = min(worksheet["line_1"], tax_rate_24_percent[1]) #24% tax rate upper limit
+    worksheet["line_20"] = min(worksheet["line_14"], worksheet["line_19"])
+    worksheet["line_21"] = max(worksheet["line_18"], worksheet["line_20"])
+    worksheet["line_22"] = worksheet["line_16"] - worksheet["line_17"] #This is taxed at 0% rate
+
+#Computes the Schedule D Tax Worksheet lines 23 through 43.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 23 through 43.
+def schedule_d_tax_worksheet_lines_23_43(context, worksheet):
+    worksheet["line_23"] = min(worksheet["line_1"], worksheet["line_13"])
+    worksheet["line_24"] = worksheet["line_22"]
+    worksheet["line_25"] = max(worksheet["line_23"] - worksheet["line_24"], 0)
+    worksheet["line_26"] = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
+    worksheet["line_27"] = min(worksheet["line_1"], worksheet["line_26"])
+    worksheet["line_28"] = worksheet["line_21"] + worksheet["line_22"]
+
+#Computes the Schedule D Tax Worksheet lines 23 through 32.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 23 through 32.
+def schedule_d_tax_worksheet_lines_23_32(context, worksheet):
+    pass
+
+#Computes the Schedule D Tax Worksheet lines 33 through 34.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 33 through 34.
+def schedule_d_tax_worksheet_lines_33_34(context, worksheet):
+    pass
+
+#Computes the Schedule D Tax Worksheet lines 35 through 40.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 35 through 40.
+def schedule_d_tax_worksheet_lines_35_40(context, worksheet):
+    pass
+
+#Computes the Schedule D Tax Worksheet lines 41 through 43.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 41 through 43.
+def schedule_d_tax_worksheet_lines_41_43(context, worksheet):
+    pass
+
+#Computes the Schedule D Tax Worksheet lines 44 through 47.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 44 through 47.
+def schedule_d_tax_worksheet_lines_44_47(context, worksheet):
+    pass
 
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)
