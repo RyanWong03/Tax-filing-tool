@@ -31,18 +31,15 @@ def main():
     context.constants = tax_year
     w2_data = federal.forms.f1040.collect_w2()
 
-    wages = w2_data["wages"]
-    w2_federal_tax_withheld = w2_data["federal_tax_withheld"]
+    context.form_1040.line_1a = w2_data["wages"]
+    context.form_1040.line_25a = w2_data["federal_tax_withheld"]
 
     filing_data = {
         'year': year,
-        'wages': wages,
-        'w2_federal_tax_withheld': w2_federal_tax_withheld,
         'context': context
     }
 
     federal.forms.f1040.calculate(filing_data)
-
 
 if __name__ == "__main__":
     main()
