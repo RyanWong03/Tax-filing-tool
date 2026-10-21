@@ -131,7 +131,6 @@ def calculate(filing_data):
 
     # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
     #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
-    #TODO schedule d tax worksheet, raise error for false case for line 20 so we know to implement the form
     #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
 
     # line_17 = 0 #Placeholder 
