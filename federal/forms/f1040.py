@@ -1,4 +1,3 @@
-import math
 import library
 import federal.forms.schedule_b
 import federal.forms.schedule_d
@@ -182,51 +181,6 @@ def calculate(filing_data):
     # print(f"Amount of tax owed: ${line_37:.2f}")
     # line_38 = 0 #For the sake of this, ignore penalties...
 
-#Calculates income tax owed. If taxable income < $100k, uses tax table, otherwise uses tax computation table.
-#Arguments:
-#   taxable_income: The taxable income to calculate the tax on
-#   tax_brackets: The tax brackets to calculate the tax owed from
-#Return values:
-#   tax: The tax owed (rounded)
-def calculate_income_tax(taxable_income, tax_brackets):
-    tax = 0
-
-    #Protect against $0 or lower case
-    if taxable_income <= 0:
-        return 0
-    
-    #If taxable income is under $100,000, calculate tax using IRS tax table via 1040 instructions.
-    if taxable_income < 100000:
-        #The way the IRS calculates the tax owed on income under $100k, is by figuring out which $50 slot you are in,
-        #getting the midpoint of that slot then applying the tax brackets to that income.
-        #If you make under $3k, the slot goes from $50 to $25.
-        #Example income = $15019:
-        #You'd fall between the slot of $15000 and $15050, so the midpoint would be $15025.
-        #Then you'd apply the tax brackets to $15025 to get your tax owed.
-        #Example income = $1000:
-        #You'd fall between the slot of $1000 and $1025, so the midpoint would be $1012.5.
-
-        if taxable_income < 3000:
-            income_slot = math.floor(taxable_income / 25) * 25
-            income_midpoint = income_slot + 12.5
-            taxable_income = income_midpoint
-        else:
-            income_slot = math.floor(taxable_income / 50) * 50
-            income_midpoint = income_slot + 25
-            taxable_income = income_midpoint
-
-    #If taxable income is >= $100k, the tax calculation is much more straightforward.
-    #There is no table, just basic percentage the IRS has given us.
-    #They do differ based on filing status.
-        
-    for lower, upper, rate in tax_brackets:
-        if taxable_income <= lower:
-            break
-        taxable_at_rate = min(taxable_income, upper) - lower
-        tax += taxable_at_rate * rate
-
-    return library.irs_round(tax)
-
 #Computes the Qualified Dividends and Capital Gain Tax Worksheet and saves it to the user's local app data directory.
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
@@ -269,9 +223,9 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_19 = line_9 + line_17
     line_20 = line_10 - line_19
     line_21 = library.irs_round(line_20 * 0.2)
-    line_22 = calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
+    line_22 = library.calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
     line_23 = line_18 + line_21 + line_22
-    line_24 = calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
+    line_24 = library.calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
     line_25 = library.irs_round(min(line_23, line_24))
 
     worksheet["line_1"] = line_1

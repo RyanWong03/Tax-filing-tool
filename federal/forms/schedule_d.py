@@ -1,7 +1,6 @@
 import library
 import json
 import os
-import federal.forms.f1040
 
 #TODO Change every form so it just uses worksheet["line_x"] instead of creating local variables for each line.
 
@@ -392,9 +391,9 @@ def schedule_d_tax_worksheet_lines_41_43(worksheet):
 #Return values:
 #   line_47: The tax on all taxable income to be included on Form 1040 - line 16.
 def schedule_d_tax_worksheet_lines_44_47(context, worksheet):
-    worksheet["line_44"] = federal.forms.f1040.calculate_income_tax(worksheet["line_21"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_44"] = library.calculate_income_tax(worksheet["line_21"], context.constants.TAX_BRACKETS[context.filing_status])
     worksheet["line_45"] = sum(worksheet.get(f"line_{n}") or 0 for n in [31, 34, 40, 43, 44])
-    worksheet["line_46"] = federal.forms.f1040.calculate_income_tax(worksheet["line_1"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_46"] = library.calculate_income_tax(worksheet["line_1"], context.constants.TAX_BRACKETS[context.filing_status])
 
     #We can ignore Form 2555
     worksheet["line_47"] = min(worksheet["line_45"], worksheet["line_46"])
