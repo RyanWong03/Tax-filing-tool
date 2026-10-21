@@ -191,71 +191,45 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
 
     #Any lines mentioning Form 2555 are irrelevant to us.
     
-    line_1 = context.form_1040.line_15
-    line_2 = context.form_1040.line_3a
+    worksheet["line_1"] = context.form_1040.line_15
+    worksheet["line_2"] = context.form_1040.line_3a
 
     if federal.forms.schedule_d.is_filing_schedule_d(context):
-        line_3 = min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)
+        worksheet["line_3"] = min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)
         if context.schedule_d.net_long_term_gain_loss <= 0 or context.schedule_d.line_16 <= 0:
-            line_3 = 0
+            worksheet["line_3"] = 0
     else:
-        line_3 = context.form_1040.line_7a
+        worksheet["line_3"] = context.form_1040.line_7a
 
-    line_4 = line_2 + line_3
-    line_5 = max(line_1 - line_4, 0)
+    worksheet["line_4"] = worksheet["line_2"] + worksheet["line_3"]
+    worksheet["line_5"] = max(worksheet["line_1"] - worksheet["line_4"], 0)
 
-    line_6 = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
+    worksheet["line_6"] = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
 
-    line_7 = min(line_1, line_6)
-    line_8 = min(line_5, line_7)
-    line_9 = line_7 - line_8 #This is taxed at 0%
-    line_10 = min(line_1, line_4)
-    line_11 = line_9
-    line_12 = line_10 - line_11
+    worksheet["line_7"] = min(worksheet["line_1"], worksheet["line_6"])
+    worksheet["line_8"] = min(worksheet["line_5"], worksheet["line_7"])
+    worksheet["line_9"] = worksheet["line_7"] - worksheet["line_8"]  # This is taxed at 0%
+    worksheet["line_10"] = min(worksheet["line_1"], worksheet["line_4"])
+    worksheet["line_11"] = worksheet["line_9"]
+    worksheet["line_12"] = worksheet["line_10"] - worksheet["line_11"]
 
-    line_13 = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
+    worksheet["line_13"] = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
 
-    line_14 = min(line_1, line_13)
-    line_15 = line_5 + line_9
-    line_16 = max(line_14 - line_15, 0)
-    line_17 = min(line_12, line_16)
-    line_18 = library.irs_round(line_17 * 0.15)
-    line_19 = line_9 + line_17
-    line_20 = line_10 - line_19
-    line_21 = library.irs_round(line_20 * 0.2)
-    line_22 = library.calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
-    line_23 = line_18 + line_21 + line_22
-    line_24 = library.calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
-    line_25 = library.irs_round(min(line_23, line_24))
-
-    worksheet["line_1"] = line_1
-    worksheet["line_2"] = line_2
-    worksheet["line_3"] = line_3
-    worksheet["line_4"] = line_4
-    worksheet["line_5"] = line_5
-    worksheet["line_6"] = line_6
-    worksheet["line_7"] = line_7
-    worksheet["line_8"] = line_8
-    worksheet["line_9"] = line_9
-    worksheet["line_10"] = line_10
-    worksheet["line_11"] = line_11
-    worksheet["line_12"] = line_12
-    worksheet["line_13"] = line_13
-    worksheet["line_14"] = line_14
-    worksheet["line_15"] = line_15
-    worksheet["line_16"] = line_16
-    worksheet["line_17"] = line_17
-    worksheet["line_18"] = line_18
-    worksheet["line_19"] = line_19
-    worksheet["line_20"] = line_20
-    worksheet["line_21"] = line_21
-    worksheet["line_22"] = line_22
-    worksheet["line_23"] = line_23
-    worksheet["line_24"] = line_24
-    worksheet["line_25"] = line_25
+    worksheet["line_14"] = min(worksheet["line_1"], worksheet["line_13"])
+    worksheet["line_15"] = worksheet["line_5"] + worksheet["line_9"]
+    worksheet["line_16"] = max(worksheet["line_14"] - worksheet["line_15"], 0)
+    worksheet["line_17"] = min(worksheet["line_12"], worksheet["line_16"])
+    worksheet["line_18"] = library.irs_round(worksheet["line_17"] * 0.15)
+    worksheet["line_19"] = worksheet["line_9"] + worksheet["line_17"]
+    worksheet["line_20"] = worksheet["line_10"] - worksheet["line_19"]
+    worksheet["line_21"] = library.irs_round(worksheet["line_20"] * 0.2)
+    worksheet["line_22"] = library.calculate_income_tax(worksheet["line_5"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_23"] = worksheet["line_18"] + worksheet["line_21"] + worksheet["line_22"]
+    worksheet["line_24"] = library.calculate_income_tax(worksheet["line_1"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_25"] = library.irs_round(min(worksheet["line_23"], worksheet["line_24"]))
 
     save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet)
-    return line_25
+    return worksheet["line_25"]
 
 def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
     local_app_data_dir = library.get_data_dir()
