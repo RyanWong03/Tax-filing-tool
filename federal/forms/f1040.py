@@ -183,6 +183,12 @@ def calculate(filing_data):
     # print(f"Amount of tax owed: ${line_37:.2f}")
     # line_38 = 0 #For the sake of this, ignore penalties...
 
+#Calculates income tax owed. If taxable income < $100k, uses tax table, otherwise uses tax computation table.
+#Arguments:
+#   taxable_income: The taxable income to calculate the tax on
+#   tax_brackets: The tax brackets to calculate the tax owed from
+#Return values:
+#   tax: The tax owed (rounded)
 def calculate_income_tax(taxable_income, tax_brackets):
     tax = 0
 

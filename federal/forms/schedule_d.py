@@ -1,4 +1,7 @@
-import library, json, os
+import library
+import json
+import os
+import federal.forms.f1040
 
 #TODO Change every form so it just uses worksheet["line_x"] instead of creating local variables for each line.
 
@@ -145,11 +148,11 @@ def aggregate_schedule_d(context, prior_year_return):
             #Line 20, #TODO handle form 4952
             if context.schedule_d.rate_gain_28 == 0 and context.schedule_d.unrecaptured_section_1250_gain == 0:
                 #For now we are hardcoding that we are not filing form 4952.
+                #True means fill out Qualified Dividends and Capital Gain Tax Worksheet for Form 1040 - line 16
                 context.schedule_d.line_20 = True
             else:
-                raise NotImplementedError(
-                    "Schedule D Tax Worksheet required (unrecaptured §1250 or 28% gain). Not implemented yet."
-                )
+                #False means fill out Schedule D Tax Worksheet for Form 1040 - line 16
+                context.schedule_d.line_20 = False
 
             return #Don't fill lines 21 and 22. We're done here
         else:
@@ -284,15 +287,26 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
 #Return values:
+#   total_tax: The total tax for form 1040 - line 16
 def compute_schedule_d_tax_worksheet(context):
     worksheet = {"tax_year": context.tax_year}
     schedule_d_tax_worksheet_lines_1_22(context, worksheet)
 
     if worksheet["line_1"] != worksheet["line_16"]:
-        schedule_d_tax_worksheet_lines_23_43(context, worksheet)
+        schedule_d_tax_worksheet_lines_23_32(context, worksheet)
 
-    schedule_d_tax_worksheet_lines_44_47(context, worksheet)
-    #NOTE: make sure when ending function, return the final value, don't directly set, similar to compute_qualified_dividends_and_capital_gain_tax_worksheet
+        if worksheet["line_1"] != worksheet["line_32"]:
+            schedule_d_tax_worksheet_lines_33_34(worksheet)
+
+            if context.schedule_d.unrecaptured_section_1250_gain != 0:
+                schedule_d_tax_worksheet_lines_35_40(context, worksheet)
+
+            if context.schedule_d.rate_gain_28 != 0:
+                schedule_d_tax_worksheet_lines_41_43(worksheet)
+
+    total_tax = schedule_d_tax_worksheet_lines_44_47(context, worksheet)
+    save_schedule_d_tax_worksheet(context, worksheet)
+    return total_tax
 
 #Computes the Schedule D Tax Worksheet lines 1 through 22.
 #Arguments:
@@ -329,52 +343,68 @@ def schedule_d_tax_worksheet_lines_1_22(context, worksheet):
     worksheet["line_21"] = max(worksheet["line_18"], worksheet["line_20"])
     worksheet["line_22"] = worksheet["line_16"] - worksheet["line_17"] #This is taxed at 0% rate
 
-#Computes the Schedule D Tax Worksheet lines 23 through 43.
+#Computes the Schedule D Tax Worksheet lines 23 through 32.
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
-#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 23 through 43.
-def schedule_d_tax_worksheet_lines_23_43(context, worksheet):
+#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 23 through 32.
+def schedule_d_tax_worksheet_lines_23_32(context, worksheet):
     worksheet["line_23"] = min(worksheet["line_1"], worksheet["line_13"])
     worksheet["line_24"] = worksheet["line_22"]
     worksheet["line_25"] = max(worksheet["line_23"] - worksheet["line_24"], 0)
     worksheet["line_26"] = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
     worksheet["line_27"] = min(worksheet["line_1"], worksheet["line_26"])
     worksheet["line_28"] = worksheet["line_21"] + worksheet["line_22"]
-
-#Computes the Schedule D Tax Worksheet lines 23 through 32.
-#Arguments:
-#   context: The tax context object containing the current tax year and other relevant information.
-#   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 23 through 32.
-def schedule_d_tax_worksheet_lines_23_32(context, worksheet):
-    pass
+    worksheet["line_29"] = max(worksheet["line_27"] - worksheet["line_28"], 0)
+    worksheet["line_30"] = min(worksheet["line_25"], worksheet["line_29"])
+    worksheet["line_31"] = library.irs_round(worksheet["line_30"] * 0.15)
+    worksheet["line_32"] = worksheet["line_24"] + worksheet["line_30"]
 
 #Computes the Schedule D Tax Worksheet lines 33 through 34.
 #Arguments:
-#   context: The tax context object containing the current tax year and other relevant information.
 #   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 33 through 34.
-def schedule_d_tax_worksheet_lines_33_34(context, worksheet):
-    pass
+def schedule_d_tax_worksheet_lines_33_34(worksheet):
+    worksheet["line_33"] = worksheet["line_23"] - worksheet["line_32"]
+    worksheet["line_34"] = library.irs_round(worksheet["line_33"] * 0.20)
 
 #Computes the Schedule D Tax Worksheet lines 35 through 40.
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
 #   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 35 through 40.
 def schedule_d_tax_worksheet_lines_35_40(context, worksheet):
-    pass
+    worksheet["line_35"] = min(worksheet["line_9"], context.schedule_d.unrecaptured_section_1250_gain)
+    worksheet["line_36"] = worksheet["line_10"] + worksheet["line_21"]
+    worksheet["line_37"] = worksheet["line_1"]
+    worksheet["line_38"] = max(worksheet["line_36"] - worksheet["line_37"], 0)
+    worksheet["line_39"] = max(worksheet["line_35"] - worksheet["line_38"], 0)
+    worksheet["line_40"] = library.irs_round(worksheet["line_39"] * 0.25)
 
 #Computes the Schedule D Tax Worksheet lines 41 through 43.
 #Arguments:
-#   context: The tax context object containing the current tax year and other relevant information.
 #   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 41 through 43.
-def schedule_d_tax_worksheet_lines_41_43(context, worksheet):
-    pass
+def schedule_d_tax_worksheet_lines_41_43(worksheet):
+    worksheet["line_41"] = sum(worksheet.get(f"line_{n}") or 0 for n in [21, 22, 30, 33, 39])
+    worksheet["line_42"] = worksheet["line_1"] - worksheet["line_41"]
+    worksheet["line_43"] = library.irs_round(worksheet["line_42"] * 0.28)
 
 #Computes the Schedule D Tax Worksheet lines 44 through 47.
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
 #   worksheet: A dictionary to store the computed values for the Schedule D Tax Worksheet lines 44 through 47.
+#Return values:
+#   line_47: The tax on all taxable income to be included on Form 1040 - line 16.
 def schedule_d_tax_worksheet_lines_44_47(context, worksheet):
-    pass
+    worksheet["line_44"] = federal.forms.f1040.calculate_income_tax(worksheet["line_21"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_45"] = sum(worksheet.get(f"line_{n}") or 0 for n in [31, 34, 40, 43, 44])
+    worksheet["line_46"] = federal.forms.f1040.calculate_income_tax(worksheet["line_1"], context.constants.TAX_BRACKETS[context.filing_status])
+
+    #We can ignore Form 2555
+    worksheet["line_47"] = min(worksheet["line_45"], worksheet["line_46"])
+    return worksheet["line_47"]
+
+def save_schedule_d_tax_worksheet(context, worksheet):
+    path = os.path.join(library.get_data_dir(), f"schedule_d_tax_worksheet_{context.tax_year}.json")
+    with open(path, "w") as f:
+        json.dump(worksheet, f, indent=4)
 
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)

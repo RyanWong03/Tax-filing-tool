@@ -68,11 +68,11 @@ def test_typed_box_2b_reaches_the_1250_worksheet(monkeypatch):
     schedule_b.collect_1099_div(context)
     schedule_b.aggregate_schedule_b(context)
 
-    with pytest.raises(NotImplementedError, match="Schedule D Tax Worksheet"):
-        schedule_d.aggregate_schedule_d(context, ZERO_PRIOR)
+    schedule_d.aggregate_schedule_d(context, ZERO_PRIOR)
 
+    assert context.schedule_d.line_17 is True
     assert context.schedule_d.unrecaptured_section_1250_gain == 500
-    assert context.schedule_d.line_20 is None
+    assert context.schedule_d.line_20 is False
 
 def test_typed_accrued_market_discount_reaches_schedule_b_interest(monkeypatch):
     context = tax_context.tax_context(YEAR)
