@@ -56,9 +56,6 @@ class schedule_d_context:
 
 #Main schedule D function. Handles everything in Schedule D form.
 def aggregate_schedule_d(context, prior_year_return):
-    #TODO Make sure all check boxes are accounted for in this form and if any other forms have make sure to fix those.
-    #can just put true/false as yes/no
-
     context.schedule_d.disposal_qof = False #Hardcode for now since irrevelant for us.
     
     #Short term
