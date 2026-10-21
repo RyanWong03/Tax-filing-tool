@@ -84,7 +84,6 @@ def aggregate_schedule_d(context, prior_year_return):
     #TODO #Lines 4 and 5 omitted; irrelevant to us.
 
     #Check if we need to fill out capital loss carryover worksheet. Line 6
-    #TODO assign short-term and long-term capital loss carryover variable value here, returned from the worksheet function.
     if prior_year_return["schedule_d_line_21"] < 0 \
     and (prior_year_return["schedule_d_line_21"] > prior_year_return["schedule_d_line_16"] \
         or prior_year_return["form_1040_line_15"] < 0):
