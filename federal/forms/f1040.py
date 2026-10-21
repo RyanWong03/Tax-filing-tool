@@ -88,23 +88,6 @@ def calculate(filing_data):
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
     prior_year_return = library.load_prior_year_return(tax_year)
-    # #testing
-    # federal.forms.schedule_b.collect_1099_int(context)
-    # federal.forms.schedule_b.collect_1099_div(context)
-    #federal.forms.form_8949.collect_1099_b_short_term(context)
-    #print(context.form_8949.short_term_entries)
-    #federal.forms.form_8949.collect_1099_b_long_term(context)
-    #print(context.form_8949.long_term_entries)
-
-    # federal.forms.schedule_b.aggregate_schedule_b(context)
-
-    # print(f"interest entries: {context.schedule_b.interest_entries}")
-    # print(f"dividend entries: {context.schedule_b.dividend_entries}")
-    # print(f"taxable interest: {context.schedule_b.taxable_interest}")
-    # print(f"ordinary dividends: {context.schedule_b.ordinary_dividends}")
-
-    # federal.forms.schedule_b.schedule_b_fillout(context)
-    # ####### testing end #######
     # line_1a = wages
     # line_1z = line_1a #Total wages
 
