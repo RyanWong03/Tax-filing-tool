@@ -181,51 +181,34 @@ def compute_capital_loss_carryover_worksheet(context, prior_year_return):
     short_term_capital_loss_carryover = 0
     long_term_capital_loss_carryover = 0
 
-    line_1 = prior_year_return["form_1040_line_15"]
-    line_2 = abs(prior_year_return["schedule_d_line_21"])
-    line_3 = max(line_1 + line_2, 0)
-    line_4 = min(line_2, line_3)
-
-    worksheet["line_1"] = line_1
-    worksheet["line_2"] = line_2
-    worksheet["line_3"] = line_3
-    worksheet["line_4"] = line_4
+    worksheet["line_1"] = prior_year_return["form_1040_line_15"]
+    worksheet["line_2"] = abs(prior_year_return["schedule_d_line_21"])
+    worksheet["line_3"] = max(worksheet["line_1"] + worksheet["line_2"], 0)
+    worksheet["line_4"] = min(worksheet["line_2"], worksheet["line_3"])
 
     if prior_year_return["schedule_d_line_7"] < 0:
-        line_5 = abs(prior_year_return["schedule_d_line_7"])
-        line_6 = max(prior_year_return["schedule_d_line_15"], 0)
-        line_7 = line_4 + line_6
-        line_8 = max(line_5 - line_7, 0)
+        worksheet["line_5"] = abs(prior_year_return["schedule_d_line_7"])
+        worksheet["line_6"] = max(prior_year_return["schedule_d_line_15"], 0)
+        worksheet["line_7"] = worksheet["line_4"] + worksheet["line_6"]
+        worksheet["line_8"] = max(worksheet["line_5"] - worksheet["line_7"], 0)
 
-        worksheet["line_5"] = line_5
-        worksheet["line_6"] = line_6
-        worksheet["line_7"] = line_7
-        worksheet["line_8"] = line_8
-
-        if line_8 > 0:
-            short_term_capital_loss_carryover = line_8
+        if worksheet["line_8"] > 0:
+            short_term_capital_loss_carryover = worksheet["line_8"]
     else:
-        line_5 = 0
-        worksheet["line_5"] = line_5
+        worksheet["line_5"] = 0
 
     if prior_year_return["schedule_d_line_15"] >= 0:
         save_capital_loss_carryover_worksheet(context, worksheet)
         return short_term_capital_loss_carryover, long_term_capital_loss_carryover
 
-    line_9 = abs(prior_year_return["schedule_d_line_15"])
-    line_10 = max(prior_year_return["schedule_d_line_7"], 0)
-    line_11 = max(line_4 - line_5, 0)
-    line_12 = line_10 + line_11
-    line_13 = max(line_9 - line_12, 0)
+    worksheet["line_9"] = abs(prior_year_return["schedule_d_line_15"])
+    worksheet["line_10"] = max(prior_year_return["schedule_d_line_7"], 0)
+    worksheet["line_11"] = max(worksheet["line_4"] - worksheet["line_5"], 0)
+    worksheet["line_12"] = worksheet["line_10"] + worksheet["line_11"]
+    worksheet["line_13"] = max(worksheet["line_9"] - worksheet["line_12"], 0)
 
-    worksheet["line_9"] = line_9
-    worksheet["line_10"] = line_10
-    worksheet["line_11"] = line_11
-    worksheet["line_12"] = line_12
-    worksheet["line_13"] = line_13
-
-    if line_13 > 0:
-        long_term_capital_loss_carryover = line_13
+    if worksheet["line_13"] > 0:
+        long_term_capital_loss_carryover = worksheet["line_13"]
 
     save_capital_loss_carryover_worksheet(context, worksheet)
     return short_term_capital_loss_carryover, long_term_capital_loss_carryover
