@@ -248,28 +248,18 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
 
     #Lines 1-9 omitted; irrelevant to us.
 
-    line_10 = 0 #Hardcode to 0; irrevelant to us
-    line_11 = context.schedule_b.unrecaptured_sec_1250_gain #Schedule K-1, Form 2439, Form 1099-R are irrelevant to us.
-    line_12 = 0 #Hardcode to 0; irrevelant to us
-    line_13 = line_10 + line_11 + line_12
-    line_14 = 0 #Hardcode to 0; irrevelant to us
-    line_15 = min(context.schedule_d.net_short_term_gain_loss, 0)
-    line_16 = -context.schedule_d.long_term_capital_loss_carryover #Schedule K-1 irrelevant to us.
-    line_17 = abs(min(line_14 + line_15 + line_16, 0))
-    line_18 = max(line_13 - line_17, 0)
+    worksheet["line_10"] = 0 #Hardcode to 0; irrevelant to us
+    worksheet["line_11"] = context.schedule_b.unrecaptured_sec_1250_gain #Schedule K-1, Form 2439, Form 1099-R are irrelevant to us.
+    worksheet["line_12"] = 0 #Hardcode to 0; irrevelant to us
+    worksheet["line_13"] = worksheet["line_10"] + worksheet["line_11"] + worksheet["line_12"]
+    worksheet["line_14"] = 0 #Hardcode to 0; irrevelant to us
+    worksheet["line_15"] = min(context.schedule_d.net_short_term_gain_loss, 0)
+    worksheet["line_16"] = -context.schedule_d.long_term_capital_loss_carryover #Schedule K-1 irrelevant to us.
+    worksheet["line_17"] = abs(min(worksheet["line_14"] + worksheet["line_15"] + worksheet["line_16"], 0))
+    worksheet["line_18"] = max(worksheet["line_13"] - worksheet["line_17"], 0)
 
-    worksheet["line_10"] = line_10
-    worksheet["line_11"] = line_11
-    worksheet["line_12"] = line_12
-    worksheet["line_13"] = line_13
-    worksheet["line_14"] = line_14
-    worksheet["line_15"] = line_15
-    worksheet["line_16"] = line_16
-    worksheet["line_17"] = line_17
-    worksheet["line_18"] = line_18
-
-    if line_18 > 0:
-        unrecaptured_section_1250_gain = line_18
+    if worksheet["line_18"] > 0:
+        unrecaptured_section_1250_gain = worksheet["line_18"]
 
     save_unrecaptured_section_1250_gain_worksheet(context, worksheet)
     return unrecaptured_section_1250_gain
