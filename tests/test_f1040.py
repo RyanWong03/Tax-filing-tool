@@ -70,7 +70,7 @@ def test_not_filing_schedule_d_uses_form_1040_line_7a(tmp_path):
     context = make_context(130000, line_7a=2000)
     result = f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
     assert result == 15900
-    assert read_saved(tmp_path)["line_3"] == 2000
+    assert read_saved(tmp_path)["line_3"] == [False, 2000]
 
 def test_filing_schedule_d_uses_smaller_of_long_term_net_and_total(tmp_path):
     # Schedule D: net long-term 30000, Schedule D line 16 total 20000. Line 3 = smaller = 20000.
@@ -82,7 +82,7 @@ def test_filing_schedule_d_uses_smaller_of_long_term_net_and_total(tmp_path):
     context.schedule_d.net_long_term_gain_loss = 30000
     context.schedule_d.line_16 = 20000
     assert f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context) == 14500
-    assert read_saved(tmp_path)["line_3"] == 20000
+    assert read_saved(tmp_path)["line_3"] == [True, 20000]
 
 def test_filing_schedule_d_with_total_loss_counts_no_gain(tmp_path):
     # Net long-term gain 5000, but Schedule D line 16 is a loss (-1000). Either one zero or less means line 3 = 0.
@@ -92,7 +92,7 @@ def test_filing_schedule_d_with_total_loss_counts_no_gain(tmp_path):
     context.schedule_d.net_long_term_gain_loss = 5000
     context.schedule_d.line_16 = -1000
     assert f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context) == 20000
-    assert read_saved(tmp_path)["line_3"] == 0
+    assert read_saved(tmp_path)["line_3"] == [True, 0]
 
 def test_filing_schedule_d_with_long_term_loss_counts_no_gain(tmp_path):
     # Net long-term is a loss (-2000) even though Schedule D line 16 is positive. Line 3 = 0.
@@ -101,7 +101,7 @@ def test_filing_schedule_d_with_long_term_loss_counts_no_gain(tmp_path):
     context.schedule_d.net_long_term_gain_loss = -2000
     context.schedule_d.line_16 = 3000
     assert f1040.compute_qualified_dividends_and_capital_gain_tax_worksheet(context) == 20000
-    assert read_saved(tmp_path)["line_3"] == 0
+    assert read_saved(tmp_path)["line_3"] == [True, 0]
 
 def test_result_is_never_more_than_regular_tax():
     # Zero-rate zone only goes to 10000 here, so most of the 100000 of dividends is taxed at 15%,
@@ -125,7 +125,7 @@ def test_saved_worksheet_every_line(tmp_path):
         "tax_year": YEAR,
         "line_1": 130000,   # taxable income
         "line_2": 50000,    # qualified dividends
-        "line_3": 0,        # no capital gains
+        "line_3": [False, 0],        # no capital gains
         "line_4": 50000,    # 50000 + 0
         "line_5": 80000,    # 130000 - 50000 = ordinary part
         "line_6": 100000,   # zero-rate limit

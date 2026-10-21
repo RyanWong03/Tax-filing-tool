@@ -201,7 +201,7 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     else:
         worksheet["line_3"] = [False, context.form_1040.line_7a]
 
-    worksheet["line_4"] = worksheet["line_2"] + worksheet["line_3"]
+    worksheet["line_4"] = worksheet["line_2"] + worksheet["line_3"][1]
     worksheet["line_5"] = max(worksheet["line_1"] - worksheet["line_4"], 0)
 
     worksheet["line_6"] = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
