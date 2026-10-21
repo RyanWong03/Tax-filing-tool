@@ -265,10 +265,10 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     line_15 = line_5 + line_9
     line_16 = max(line_14 - line_15, 0)
     line_17 = min(line_12, line_16)
-    line_18 = line_17 * 0.15
+    line_18 = library.irs_round(line_17 * 0.15)
     line_19 = line_9 + line_17
     line_20 = line_10 - line_19
-    line_21 = line_20 * 0.2
+    line_21 = library.irs_round(line_20 * 0.2)
     line_22 = calculate_income_tax(line_5, context.constants.TAX_BRACKETS[context.filing_status])
     line_23 = line_18 + line_21 + line_22
     line_24 = calculate_income_tax(line_1, context.constants.TAX_BRACKETS[context.filing_status])
