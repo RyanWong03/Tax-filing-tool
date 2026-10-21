@@ -86,6 +86,7 @@ def collect_1099_b_short_term(context):
             except ValueError:
                 print("Invalid input. Please enter a numeric value.")
 
+#Long term stock sales from 1099-B forms
 def collect_1099_b_long_term(context):
     long_term_codes = input("Enter the code(s) that are most applicable to you, based on your 1099-B(s), separated by spaces (Example: D E F)\n" \
     "(D) Long-term transactions reported on Form(s) 1099-B showing basis was reported to the IRS\n" \
@@ -156,3 +157,5 @@ def collect_1099_b_long_term(context):
                     break
             except ValueError:
                 print("Invalid input. Please enter a numeric value.")
+
+#TODO: Implement function that actually fill out the form(s).

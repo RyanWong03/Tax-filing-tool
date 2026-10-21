@@ -28,3 +28,5 @@ TAX_BRACKETS = {
         (768700, float('inf'), 0.37)
     ],
 }   
+
+#TODO Add remaining constants for 2026, including QDCGT thresholds and Schedule D capital loss deduction limits once IRS releases them.

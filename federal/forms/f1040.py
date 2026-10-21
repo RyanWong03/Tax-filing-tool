@@ -1,4 +1,44 @@
-import math, library, federal.forms.schedule_b, tax_context
+import library
+import federal.forms.schedule_b
+import federal.forms.schedule_d
+import os
+import json
+
+class form_1040_context:
+    def __init__(self):
+        self.line_1a = 0
+        self.line_1z = 0
+        self.line_2a = 0
+        self.line_2b = 0
+        self.line_3a = 0
+        self.line_3b = 0
+        self.line_7a = 0
+        self.line_9 = 0
+        self.line_11 = 0
+        self.line_12 = 0
+        self.line_14 = 0
+        self.line_15 = 0
+        self.line_16 = 0
+        self.line_17 = 0
+        self.line_18 = 0
+        self.line_21 = 0
+        self.line_22 = 0
+        self.line_23 = 0
+        self.line_24 = 0
+        self.line_25a = 0
+        self.line_25b = 0
+        self.line_25d = 0
+        self.line_26 = 0
+        self.line_27a = 0
+        self.line_28 = 0
+        self.line_29 = 0
+        self.line_30 = 0
+        self.line_31 = 0
+        self.line_32 = 0
+        self.line_33 = 0
+        self.line_34 = 0
+        self.line_36 = 0
+        self.line_37 = 0
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
@@ -40,13 +80,15 @@ def collect_w2():
     return form_data
 
 def calculate(filing_data):
+    context = filing_data['context']
     constants = filing_data['constants']
-    filing_status = filing_data['filing_status']
+    filing_status = context.filing_status
+    tax_year = context.tax_year
     wages = filing_data['wages']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
+    prior_year_return = library.load_prior_year_return(tax_year)
     # #testing
-    #context = tax_context.tax_context()
     # federal.forms.schedule_b.collect_1099_int(context)
     # federal.forms.schedule_b.collect_1099_div(context)
     #federal.forms.form_8949.collect_1099_b_short_term(context)
@@ -87,6 +129,8 @@ def calculate(filing_data):
     # print(f"Taxable income: ${line_15:.2f}")
 
     # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
+    #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
+    #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
 
     # line_17 = 0 #Placeholder 
 
@@ -137,41 +181,59 @@ def calculate(filing_data):
     # print(f"Amount of tax owed: ${line_37:.2f}")
     # line_38 = 0 #For the sake of this, ignore penalties...
 
-def calculate_income_tax(taxable_income, tax_brackets):
-    tax = 0
+#Computes the Qualified Dividends and Capital Gain Tax Worksheet and saves it to the user's local app data directory.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+#Return values:
+#   line_25: The computed tax amount from the Qualified Dividends and Capital Gain Tax Worksheet.
+def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
+    worksheet = {"tax_year": context.tax_year}
 
-    #Protect against $0 or lower case
-    if taxable_income <= 0:
-        return 0
+    #Any lines mentioning Form 2555 are irrelevant to us.
     
-    #If taxable income is under $100,000, calculate tax using IRS tax table via 1040 instructions.
-    if taxable_income < 100000:
-        #The way the IRS calculates the tax owed on income under $100k, is by figuring out which $50 slot you are in,
-        #getting the midpoint of that slot then applying the tax brackets to that income.
-        #If you make under $3k, the slot goes from $50 to $25.
-        #Example income = $15019:
-        #You'd fall between the slot of $15000 and $15050, so the midpoint would be $15025.
-        #Then you'd apply the tax brackets to $15025 to get your tax owed.
-        #Example income = $1000:
-        #You'd fall between the slot of $1000 and $1025, so the midpoint would be $1012.5.
+    worksheet["line_1"] = context.form_1040.line_15
+    worksheet["line_2"] = context.form_1040.line_3a
 
-        if taxable_income < 3000:
-            income_slot = math.floor(taxable_income / 25) * 25
-            income_midpoint = income_slot + 12.5
-            taxable_income = income_midpoint
-        else:
-            income_slot = math.floor(taxable_income / 50) * 50
-            income_midpoint = income_slot + 25
-            taxable_income = income_midpoint
+    if federal.forms.schedule_d.is_filing_schedule_d(context):
+        worksheet["line_3"] = [True, min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)]
+        if context.schedule_d.net_long_term_gain_loss <= 0 or context.schedule_d.line_16 <= 0:
+            worksheet["line_3"] = [True, 0]
+    else:
+        worksheet["line_3"] = [False, context.form_1040.line_7a]
 
-    #If taxable income is >= $100k, the tax calculation is much more straightforward.
-    #There is no table, just basic percentage the IRS has given us.
-    #They do differ based on filing status.
-        
-    for lower, upper, rate in tax_brackets:
-            if taxable_income <= lower:
-                break
-            taxable_at_rate = min(taxable_income, upper) - lower
-            tax += taxable_at_rate * rate
+    worksheet["line_4"] = worksheet["line_2"] + worksheet["line_3"][1]
+    worksheet["line_5"] = max(worksheet["line_1"] - worksheet["line_4"], 0)
 
-    return library.irs_round(tax)
+    worksheet["line_6"] = context.constants.QDCGT_ZERO_RATE_MAX[context.filing_status]
+
+    worksheet["line_7"] = min(worksheet["line_1"], worksheet["line_6"])
+    worksheet["line_8"] = min(worksheet["line_5"], worksheet["line_7"])
+    worksheet["line_9"] = worksheet["line_7"] - worksheet["line_8"]  # This is taxed at 0%
+    worksheet["line_10"] = min(worksheet["line_1"], worksheet["line_4"])
+    worksheet["line_11"] = worksheet["line_9"]
+    worksheet["line_12"] = worksheet["line_10"] - worksheet["line_11"]
+
+    worksheet["line_13"] = context.constants.QDCGT_FIFTEEN_RATE_MAX[context.filing_status]
+
+    worksheet["line_14"] = min(worksheet["line_1"], worksheet["line_13"])
+    worksheet["line_15"] = worksheet["line_5"] + worksheet["line_9"]
+    worksheet["line_16"] = max(worksheet["line_14"] - worksheet["line_15"], 0)
+    worksheet["line_17"] = min(worksheet["line_12"], worksheet["line_16"])
+    worksheet["line_18"] = library.irs_round(worksheet["line_17"] * 0.15)
+    worksheet["line_19"] = worksheet["line_9"] + worksheet["line_17"]
+    worksheet["line_20"] = worksheet["line_10"] - worksheet["line_19"]
+    worksheet["line_21"] = library.irs_round(worksheet["line_20"] * 0.2)
+    worksheet["line_22"] = library.calculate_income_tax(worksheet["line_5"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_23"] = worksheet["line_18"] + worksheet["line_21"] + worksheet["line_22"]
+    worksheet["line_24"] = library.calculate_income_tax(worksheet["line_1"], context.constants.TAX_BRACKETS[context.filing_status])
+    worksheet["line_25"] = library.irs_round(min(worksheet["line_23"], worksheet["line_24"]))
+
+    save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet)
+    return worksheet["line_25"]
+
+def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
+    local_app_data_dir = library.get_data_dir()
+    worksheet_file = os.path.join(local_app_data_dir, f"qualified_dividends_and_capital_gain_tax_worksheet_{context.tax_year}.json")
+    
+    with open(worksheet_file, "w") as f:
+        json.dump(worksheet, f, indent=4)
