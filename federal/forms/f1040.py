@@ -195,11 +195,11 @@ def compute_qualified_dividends_and_capital_gain_tax_worksheet(context):
     worksheet["line_2"] = context.form_1040.line_3a
 
     if federal.forms.schedule_d.is_filing_schedule_d(context):
-        worksheet["line_3"] = min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)
+        worksheet["line_3"] = [True, min(context.schedule_d.net_long_term_gain_loss, context.schedule_d.line_16)]
         if context.schedule_d.net_long_term_gain_loss <= 0 or context.schedule_d.line_16 <= 0:
-            worksheet["line_3"] = 0
+            worksheet["line_3"] = [True, 0]
     else:
-        worksheet["line_3"] = context.form_1040.line_7a
+        worksheet["line_3"] = [False, context.form_1040.line_7a]
 
     worksheet["line_4"] = worksheet["line_2"] + worksheet["line_3"]
     worksheet["line_5"] = max(worksheet["line_1"] - worksheet["line_4"], 0)
