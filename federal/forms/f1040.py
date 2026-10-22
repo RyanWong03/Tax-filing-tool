@@ -20,34 +20,50 @@ class form_1040_context:
         self.line_2b = 0
         self.line_3a = 0
         self.line_3b = 0
-        self.line_3c = [False, False] #Holds the position of each checkbox that is checked
+        self.line_3c_childs_dividends_included_in_line_3a = False
+        self.line_3c_childs_dividends_included_in_line_3b = False
         self.line_4a = 0
         self.line_4b = 0
-        self.line_4c = [False, False, False] #Holds the position of each checkbox that is checked
+        self.line_4c_rollover = False
+        self.line_4c_qcd = False
+        self.line_4c_misc = False
+        self.line_4c_amt = 0
         self.line_5a = 0
         self.line_5b = 0
-        self.line_5c = [False, False, False] #Holds the position of each checkbox that is checked
+        self.line_5c_rollover = False
+        self.line_5c_pso = False
+        self.line_5c_misc = False
+        self.line_5c_misc_amt = False
         self.line_6a = 0
         self.line_6b = 0
         self.line_6c = False
         self.line_6d = False
         self.line_7a = 0
-        self.line_7b = [False, False] #Holds the position of each checkbox that is checked
+        self.line_7b_schedule_d_not_required = False
+        self.line_7b_includes_childs_capital_gain_loss = False
+        self.line_7b_includes_childs_capital_gain_loss_amt = 0
         self.line_8 = 0
         self.line_9 = 0
         self.line_10 = 0
         self.line_11a = 0
-        self.line_12a = [False, False] #Holds the position of each checkbox that is checked
+        self.line_12a_you_are_claimed_as_dependent = False
+        self.line_12a_spouse_is_claimed_as_dependent = False
         self.line_12b = False
         self.line_12c = False
-        #For line_12d, first 2 go to top row, last 2 go to bottom row of checkboxes
-        self.line_12d = [False, False, False, False] #Holds the position of each checkbox that is checked
+        self.line_12d_you_are_age_65_plus = False
+        self.line_12d_you_are_blind = False
+        self.line_12d_spouse_is_age_65_plus = False
+        self.line_12d_spouse_is_blind = False
         self.line_12e = 0
         self.line_13a = 0
         self.line_13b = 0
         self.line_14 = 0
         self.line_15 = 0
-        self.line_16 = 0
+        self.line_16_amt = 0
+        self.line_16_form_8814 = False
+        self.line_16_form_4972 = False
+        self.line_16_form_misc = False
+        self.line_16_form_misc_value = ""
         self.line_17 = 0
         self.line_18 = 0
         self.line_19 = 0
@@ -64,7 +80,8 @@ class form_1040_context:
         self.line_27a = 0
         self.line_27b = False
         self.line_27c = False
-        self.line_28 = [0, False] #ACTC amount, checkbox bool
+        self.line_28_reject_actc_claim = False
+        self.line_28_actc_amt = 0
         self.line_29 = 0
         self.line_30 = 0
         self.line_31 = 0
@@ -177,15 +194,11 @@ def calculate(filing_data):
 
     context.form_1040.line_15 = max(context.form_1040.line_11b - context.form_1040.line_14, 0)
 
-    # line_14 = line_12 #AGI - standard deduction
-
-    # line_15 = max(0, line_11 - line_14) #Taxable income
-
-    # print(f"Taxable income: ${line_15:.2f}")
-
-    # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
-    #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
     #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
+    if context.schedule_d.line_20 is True or context.schedule_d.line_22 is True:
+        context.form_1040.line_16_amt = compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+    else:
+        context.form_1040.line_16_amt = federal.forms.schedule_d.compute_schedule_d_tax_worksheet(context)
 
     # line_17 = 0 #Placeholder 
 
