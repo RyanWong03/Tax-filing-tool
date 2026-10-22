@@ -12,6 +12,9 @@ class form_1040_context:
         self.line_2b = 0
         self.line_3a = 0
         self.line_3b = 0
+        self.line_5a = 0
+        self.line_5b = 0
+        self.line_5c = [] #Holds the position of each checkbox that is checked
         self.line_7a = 0
         self.line_9 = 0
         self.line_11 = 0
@@ -91,6 +94,7 @@ def calculate(filing_data):
     prior_year_return = library.load_prior_year_return(tax_year)
 
     context.form_1040.line_1a = wages
+    #TODO: Check if any of line_1b-i need to be implemented
     context.form_1040.line_1z = context.form_1040.line_1a
 
     federal.forms.schedule_b.aggregate_schedule_b(context)
@@ -98,14 +102,19 @@ def calculate(filing_data):
     context.form_1040.line_2b = context.schedule_b.taxable_interest
     context.form_1040.line_3a = context.schedule_b.qualified_dividends
     context.form_1040.line_3b = context.schedule_b.ordinary_dividends
+    #Note: line 3c can be left blank since the applicant has no children.
 
-    # total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
-    # line_2a = total_interest_data["tax_exempt_interest"]
-    # line_2b = total_interest_data["taxable_interest"]
+    #TODO: Implement lines 4a-c
 
-    # total_dividends_data = federal.forms.schedule_b.total_dividends() #From 1099-DIV forms
-    # line_3a = total_dividends_data["qualified_dividends"]
-    # line_3b = total_dividends_data["ordinary_dividends"]
+    #TODO: Implement lines 5a-c
+
+    #TODO: Implement lines 6a-c
+
+    #Line 7a is set inside aggregate_schedule_d
+    federal.forms.schedule_d.aggregate_schedule_d(context)
+    #Note: 7b "Schedule D not required": always unchecked. We file Schedule D whenever there are sales,
+    # capital gain distributions, or a loss carryover, even when Exception 1 would let us skip it.
+    # "Includes child's capital gain or (loss)": always unchecked (no Form 8814) since the applicant has no children. 
     
     # line_9 = line_1z + line_2b + line_3b #Total income
 
