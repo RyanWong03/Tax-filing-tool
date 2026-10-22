@@ -46,6 +46,7 @@ class form_1040_context:
         self.line_9 = 0
         self.line_10 = 0
         self.line_11a = 0
+        self.line_11b = 0
         self.line_12a_you_are_claimed_as_dependent = False
         self.line_12a_spouse_is_claimed_as_dependent = False
         self.line_12b = False
