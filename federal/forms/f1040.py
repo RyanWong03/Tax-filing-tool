@@ -113,7 +113,7 @@ def calculate(filing_data):
     #TODO: Implement lines 6a-c
 
     #Line 7a is set inside aggregate_schedule_d
-    federal.forms.schedule_d.aggregate_schedule_d(context)
+    federal.forms.schedule_d.aggregate_schedule_d(context, prior_year_return)
 
     #Note: 7b "Schedule D not required": always unchecked. We file Schedule D whenever there are sales,
     # capital gain distributions, or a loss carryover, even when Exception 1 would let us skip it.
@@ -122,9 +122,9 @@ def calculate(filing_data):
     #TODO: Implement line 8
 
     #Total income
+    #TODO: Append lines 4b, 5b, 6b, 8 once implemented
     context.form_1040.line_9 = sum(x or 0 for x in (
-        context.form_1040.line_1z, context.form_1040.line_2b, context.form_1040.line_3b, context.form_1040.line_4b,
-        context.form_1040.line_5b, context.form_1040.line_6b, context.form_1040.line_7a, context.form_1040.line_8,
+        context.form_1040.line_1z, context.form_1040.line_2b, context.form_1040.line_3b, context.form_1040.line_7a,
     ))
 
     #TODO: Implement line 10
