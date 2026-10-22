@@ -27,13 +27,13 @@ class form_1040_context:
         self.line_4c_rollover = False
         self.line_4c_qcd = False
         self.line_4c_misc = False
-        self.line_4c_amt = 0
+        self.line_4c_misc_value = ""
         self.line_5a = 0
         self.line_5b = 0
         self.line_5c_rollover = False
         self.line_5c_pso = False
         self.line_5c_misc = False
-        self.line_5c_misc_amt = False
+        self.line_5c_misc_value = ""
         self.line_6a = 0
         self.line_6b = 0
         self.line_6c = False
@@ -194,10 +194,12 @@ def calculate(filing_data):
 
     context.form_1040.line_15 = max(context.form_1040.line_11b - context.form_1040.line_14, 0)
 
-    if context.schedule_d.line_20 is True or context.schedule_d.line_22 is True:
+    if context.schedule_d.line_20 is False:
+        context.form_1040.line_16_amt = federal.forms.schedule_d.compute_schedule_d_tax_worksheet(context)
+    elif context.schedule_d.line_20 is True or context.schedule_d.line_22 is True:
         context.form_1040.line_16_amt = compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
     else:
-        context.form_1040.line_16_amt = federal.forms.schedule_d.compute_schedule_d_tax_worksheet(context)
+        context.form_1040.line_16_amt = library.calculate_income_tax(context.form_1040.line_15, constants.TAX_BRACKETS[filing_status])
 
     # line_17 = 0 #Placeholder 
 

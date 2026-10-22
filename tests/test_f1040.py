@@ -700,11 +700,11 @@ def test_checkboxes_are_all_unchecked():
     f = context.form_1040
     for name in ["line_3c_childs_dividends_included_in_line_3a", "line_3c_childs_dividends_included_in_line_3b",
                  "line_4c_rollover", "line_4c_qcd", "line_4c_misc", "line_5c_rollover", "line_5c_pso", "line_5c_misc",
-                 "line_5c_misc_amt", "line_6c", "line_6d", "line_7b_schedule_d_not_required",
-                 "line_7b_includes_childs_capital_gain_loss", "line_12a_you_are_claimed_as_dependent",
-                 "line_12a_spouse_is_claimed_as_dependent", "line_12b", "line_12c", "line_12d_you_are_age_65_plus",
-                 "line_12d_you_are_blind", "line_12d_spouse_is_age_65_plus", "line_12d_spouse_is_blind", "line_16_form_8814",
-                 "line_16_form_4972", "line_16_form_misc", "line_27b", "line_27c", "line_28_reject_actc_claim"]:
+                 "line_6c", "line_6d", "line_7b_schedule_d_not_required", "line_7b_includes_childs_capital_gain_loss",
+                 "line_12a_you_are_claimed_as_dependent","line_12a_spouse_is_claimed_as_dependent", "line_12b",
+                 "line_12c", "line_12d_you_are_age_65_plus", "line_12d_you_are_blind", "line_12d_spouse_is_age_65_plus",
+                 "line_12d_spouse_is_blind", "line_16_form_8814", "line_16_form_4972", "line_16_form_misc", "line_27b",
+                 "line_27c", "line_28_reject_actc_claim"]:
         value = getattr(f, name)
         values = value if isinstance(value, list) else [value]
         assert not any(values), name
@@ -733,3 +733,11 @@ def test_lines_1_to_15_arithmetic_holds():
     assert f.line_11a == f.line_9 - f.line_10
     assert f.line_14 == f.line_12e + f.line_13a + f.line_13b
     assert f.line_15 == max(f.line_11b - f.line_14, 0)
+
+def test_wages_only_does_not_run_any_worksheet(tmp_path):
+    context = make_1040_context()
+
+    run_calculate(context, 60000)
+
+    assert not (tmp_path / f"schedule_d_tax_worksheet_{YEAR}.json").exists()
+    assert not (tmp_path / f"qualified_dividends_and_capital_gain_tax_worksheet_{YEAR}.json").exists()
