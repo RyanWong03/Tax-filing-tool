@@ -513,7 +513,11 @@ def test_tax_on_wages_only_uses_the_tax_table():
     run_calculate(context, 60000)
 
     assert context.form_1040.line_15 == 44250
-    assert context.form_1040.line_16 == 5075
+    assert context.form_1040.line_16_amt == 5075
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
     assert context.form_1040.line_24 == 5075
 
 
@@ -527,7 +531,11 @@ def test_qualified_dividends_use_the_qualified_dividends_worksheet():
     run_calculate(context, 60000)
 
     assert context.form_1040.line_15 == 49250
-    assert context.form_1040.line_16 == 5210
+    assert context.form_1040.line_16_amt == 5210
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
     assert context.form_1040.line_24 == 5210
 
 
@@ -542,7 +550,11 @@ def test_long_term_gain_with_line_20_yes_uses_the_qualified_dividends_worksheet(
 
     assert context.schedule_d.line_20 is True
     assert context.form_1040.line_15 == 52250
-    assert context.form_1040.line_16 == 5660
+    assert context.form_1040.line_16_amt == 5660
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
 
 
 def test_box_2b_gain_uses_the_schedule_d_tax_worksheet():
@@ -561,7 +573,11 @@ def test_box_2b_gain_uses_the_schedule_d_tax_worksheet():
 
     assert context.schedule_d.line_20 is False
     assert context.form_1040.line_15 == 54250
-    assert context.form_1040.line_16 == 6020
+    assert context.form_1040.line_16_amt == 6020
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
     assert context.form_1040.line_24 == 6020
 
 
@@ -581,7 +597,11 @@ def test_box_2b_gain_absorbed_by_a_short_term_loss_uses_the_qualified_dividends_
 
     assert context.schedule_d.line_20 is True
     assert context.form_1040.line_15 == 53450
-    assert context.form_1040.line_16 == 5840
+    assert context.form_1040.line_16_amt == 5840
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
 
 
 def test_qualified_dividends_with_no_long_term_gain_use_the_qualified_dividends_worksheet():
@@ -598,7 +618,11 @@ def test_qualified_dividends_with_no_long_term_gain_use_the_qualified_dividends_
 
     assert context.schedule_d.line_22 is True
     assert context.form_1040.line_15 == 48650
-    assert context.form_1040.line_16 == 5611
+    assert context.form_1040.line_16_amt == 5611
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
 
 
 def test_same_sales_without_qualified_dividends_use_the_tax_table():
@@ -613,7 +637,11 @@ def test_same_sales_without_qualified_dividends_use_the_tax_table():
 
     assert context.schedule_d.line_22 is False
     assert context.form_1040.line_15 == 48650
-    assert context.form_1040.line_16 == 5623
+    assert context.form_1040.line_16_amt == 5623
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
 
 
 def test_no_taxable_income_means_no_tax():
@@ -624,7 +652,11 @@ def test_no_taxable_income_means_no_tax():
     run_calculate(context, 10000)
 
     assert context.form_1040.line_15 == 0
-    assert context.form_1040.line_16 == 0
+    assert context.form_1040.line_16_amt == 0
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
     assert context.form_1040.line_24 == 0
 
 
@@ -636,7 +668,11 @@ def test_married_filing_jointly_uses_the_joint_brackets():
     run_calculate(context, 100000)
 
     assert context.form_1040.line_15 == 68500
-    assert context.form_1040.line_16 == 7746
+    assert context.form_1040.line_16_amt == 7746
+    assert context.form_1040.line_16_form_8814 is False
+    assert context.form_1040.line_16_form_4972 is False
+    assert context.form_1040.line_16_form_misc is False
+    assert context.form_1040.line_16_form_misc_value == ""
     assert context.form_1040.line_24 == 7746
 
 
@@ -648,7 +684,7 @@ def test_lines_17_to_24_add_up():
     run_calculate(context, 60000)
 
     f = context.form_1040
-    assert f.line_18 == f.line_16 + f.line_17
+    assert f.line_18 == f.line_16_amt + f.line_17
     assert f.line_21 == f.line_19 + f.line_20
     assert f.line_22 == max(f.line_18 - f.line_21, 0)
     assert f.line_24 == f.line_22 + f.line_23
@@ -667,9 +703,9 @@ def test_lines_without_a_schedule_yet_are_zero():
     assert f.line_20 == 0
     assert f.line_23 == 0
     assert f.line_21 == 0                  # 19 + 20
-    assert f.line_18 == f.line_16          # 16 + 17
-    assert f.line_22 == f.line_16          # nothing to subtract
-    assert f.line_24 == f.line_16          # 22 + 23
+    assert f.line_18 == f.line_16_amt          # 16 + 17
+    assert f.line_22 == f.line_16_amt          # nothing to subtract
+    assert f.line_24 == f.line_16_amt          # 22 + 23
 
 def test_income_lines_without_a_source_are_zero():
     context = make_1040_context()
@@ -690,8 +726,13 @@ def test_checkboxes_are_all_unchecked():
     run_calculate(context, 60000)
 
     f = context.form_1040
-    for name in ["line_3c", "line_4c", "line_5c", "line_6c", "line_6d", "line_7b",
-                 "line_12a", "line_12b", "line_12c", "line_12d"]:
+    for name in ["line_3c_childs_dividends_included_in_line_3a", "line_3c_childs_dividends_included_in_line_3b",
+                 "line_4c_rollover", "line_4c_qcd", "line_4c_misc", "line_5c_rollover", "line_5c_pso", "line_5c_misc",
+                 "line_5c_misc_amt", "line_6c", "line_6d", "line_7b_schedule_d_not_required",
+                 "line_7b_includes_childs_capital_gain_loss", "line_12a_you_are_claimed_as_dependent",
+                 "line_12a_spouse_is_claimed_as_dependent", "line_12b", "line_12c", "line_12d_you_are_age_65_plus",
+                 "line_12d_you_are_blind", "line_12d_spouse_is_age_65_plus", "line_12d_spouse_is_blind", "line_16_form_8814",
+                 "line_16_form_4972", "line_16_form_misc", "line_27b", "line_27c", "line_28_reject_actc_claim"]:
         value = getattr(f, name)
         values = value if isinstance(value, list) else [value]
         assert not any(values), name
