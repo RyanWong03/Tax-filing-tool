@@ -7,35 +7,64 @@ import json
 class form_1040_context:
     def __init__(self):
         self.line_1a = 0
+        self.line_1b = 0
+        self.line_1c = 0
+        self.line_1d = 0
+        self.line_1e = 0
+        self.line_1f = 0
+        self.line_1g = 0
+        self.line_1h = 0
+        self.line_1i = 0
         self.line_1z = 0
         self.line_2a = 0
         self.line_2b = 0
         self.line_3a = 0
         self.line_3b = 0
+        self.line_3c = [False, False] #Holds the position of each checkbox that is checked
+        self.line_4a = 0
+        self.line_4b = 0
+        self.line_4c = [False, False, False] #Holds the position of each checkbox that is checked
         self.line_5a = 0
         self.line_5b = 0
-        self.line_5c = [] #Holds the position of each checkbox that is checked
+        self.line_5c = [False, False, False] #Holds the position of each checkbox that is checked
+        self.line_6a = 0
+        self.line_6b = 0
+        self.line_6c = False
+        self.line_6d = False
         self.line_7a = 0
+        self.line_7b = [False, False] #Holds the position of each checkbox that is checked
         self.line_8 = 0
         self.line_9 = 0
         self.line_10 = 0
         self.line_11a = 0
+        self.line_12a = [False, False] #Holds the position of each checkbox that is checked
+        self.line_12b = False
+        self.line_12c = False
+        #For line_12d, first 2 go to top row, last 2 go to bottom row of checkboxes
+        self.line_12d = [False, False, False, False] #Holds the position of each checkbox that is checked
         self.line_12e = 0
+        self.line_13a = 0
+        self.line_13b = 0
         self.line_14 = 0
         self.line_15 = 0
         self.line_16 = 0
         self.line_17 = 0
         self.line_18 = 0
+        self.line_19 = 0
+        self.line_20 = 0
         self.line_21 = 0
         self.line_22 = 0
         self.line_23 = 0
         self.line_24 = 0
         self.line_25a = 0
         self.line_25b = 0
+        self.line_25c = 0
         self.line_25d = 0
         self.line_26 = 0
         self.line_27a = 0
-        self.line_28 = 0
+        self.line_27b = False
+        self.line_27c = False
+        self.line_28 = [0, False] #ACTC amount, checkbox bool
         self.line_29 = 0
         self.line_30 = 0
         self.line_31 = 0
@@ -44,6 +73,7 @@ class form_1040_context:
         self.line_34 = 0
         self.line_36 = 0
         self.line_37 = 0
+        self.line_38 = 0
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")

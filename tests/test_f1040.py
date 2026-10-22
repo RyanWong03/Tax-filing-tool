@@ -667,3 +667,53 @@ def test_lines_without_a_schedule_yet_are_zero():
     assert f.line_18 == f.line_16          # 16 + 17
     assert f.line_22 == f.line_16          # nothing to subtract
     assert f.line_24 == f.line_16          # 22 + 23
+
+def test_income_lines_without_a_source_are_zero():
+    context = make_1040_context()
+
+    run_calculate(context, 60000)
+
+    f = context.form_1040
+    for name in ["line_1b", "line_1c", "line_1d", "line_1e", "line_1f", "line_1g", "line_1h", "line_1i",
+                 "line_4a", "line_4b", "line_5a", "line_5b", "line_6a", "line_6b"]:
+        assert getattr(f, name) == 0, name
+
+
+def test_checkboxes_are_all_unchecked():
+    # Assumed: not a dependent, not married filing separately, not dual-status, under 65, not blind, no children,
+    # and we file Schedule D whenever there are sales, distributions or a carryover.
+    context = make_1040_context()
+
+    run_calculate(context, 60000)
+
+    f = context.form_1040
+    for name in ["line_3c", "line_4c", "line_5c", "line_6c", "line_6d", "line_7b",
+                 "line_12a", "line_12b", "line_12c", "line_12d"]:
+        value = getattr(f, name)
+        values = value if isinstance(value, list) else [value]
+        assert not any(values), name
+
+
+def test_line_11b_equals_line_11a():
+    context = make_1040_context()
+
+    run_calculate(context, 60000)
+
+    assert context.form_1040.line_11b == context.form_1040.line_11a
+
+
+def test_lines_1_to_15_arithmetic_holds():
+    # A return with every kind of income, so each sum has several non-zero parts.
+    context = make_1040_context()
+    context.schedule_b.interest_entries.append(interest_entry(1000, tax_exempt_interest=200))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=250, cap_gain_distributions=100))
+    context.form_8949.long_term_entries["D"].append(sale(3000))
+
+    run_calculate(context, 60000)
+
+    f = context.form_1040
+    assert f.line_1z == f.line_1a + f.line_1b + f.line_1c + f.line_1d + f.line_1e + f.line_1f + f.line_1g + f.line_1h
+    assert f.line_9 == f.line_1z + f.line_2b + f.line_3b + f.line_4b + f.line_5b + f.line_6b + f.line_7a + f.line_8
+    assert f.line_11a == f.line_9 - f.line_10
+    assert f.line_14 == f.line_12e + f.line_13a + f.line_13b
+    assert f.line_15 == max(f.line_11b - f.line_14, 0)
