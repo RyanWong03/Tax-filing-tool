@@ -484,4 +484,168 @@ def test_no_income_at_all():
     assert context.form_1040.line_11a == 0
     assert context.form_1040.line_11b == 0
     assert context.form_1040.line_15 == 0
- 
+
+# ======================= Form 1040 lines 16-24 =======================
+# Paste at the end of the lines 1-15 file. Uses its helpers: make_1040_context, run_calculate,
+# interest_entry, dividend_entry, sale. No new helpers.
+#
+# Line 16 is the tax, from one of three places:
+#   * Schedule D line 20 False  -> Schedule D Tax Worksheet
+#   * Schedule D line 20 True, or Schedule D line 22 True (qualified dividends) -> Qualified Dividends and
+#     Capital Gain Tax Worksheet
+#   * otherwise -> the tax table
+# Lines 17, 19, 20 and 23 (Schedules 2, 8812 and 3) are 0 for now, so 18 = 21 = 0 + ..., 22 = 18 and 24 = 22.
+# Expected values are hand-computed with the real 2025 brackets (single and married filing jointly), and must
+# be redone for 2026. Tax under $100,000 uses the IRS $50 slot midpoint, rounded half up.
+#
+# Needs these fields on form_1040_context: line_16, line_17, line_18, line_19, line_20, line_21, line_22,
+# line_23, line_24 (line_19 and line_20 are not there yet).
+
+
+def test_tax_on_wages_only_uses_the_tax_table():
+    # Taxable income 44250 (60000 - 15750). Slot 44250-44300, midpoint 44275.
+    # 10% of 11925 = 1192.50; 12% of 32350 = 3882 -> 5074.50 -> 5075
+    context = make_1040_context()
+
+    run_calculate(context, 60000)
+
+    assert context.form_1040.line_15 == 44250
+    assert context.form_1040.line_16 == 5075
+    assert context.form_1040.line_24 == 5075
+
+
+def test_qualified_dividends_use_the_qualified_dividends_worksheet():
+    # 5000 of ordinary dividends, all qualified. Taxable income 49250 (60000 + 5000 - 15750).
+    # Ordinary part 44250. 4100 of the dividends fills the 0% band (44250 -> 48350), the other 900 is at 15% = 135.
+    # Tax on the ordinary 44250 = 5075. Worksheet total 5210. Tax table on 49250 would be 5755.
+    context = make_1040_context()
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=5000, qualified=5000))
+
+    run_calculate(context, 60000)
+
+    assert context.form_1040.line_15 == 49250
+    assert context.form_1040.line_16 == 5210
+    assert context.form_1040.line_24 == 5210
+
+
+def test_long_term_gain_with_line_20_yes_uses_the_qualified_dividends_worksheet():
+    # 8000 long-term gain, no 1099-DIV, so Schedule D line 20 is Yes. Taxable income 52250 (68000 - 15750).
+    # Ordinary part 44250 (tax 5075). 4100 of the gain is at 0%, 3900 at 15% = 585. Total 5660.
+    # Tax table on 52250 would be 6415.
+    context = make_1040_context()
+    context.form_8949.long_term_entries["D"].append(sale(8000))
+
+    run_calculate(context, 60000)
+
+    assert context.schedule_d.line_20 is True
+    assert context.form_1040.line_15 == 52250
+    assert context.form_1040.line_16 == 5660
+
+
+def test_box_2b_gain_uses_the_schedule_d_tax_worksheet():
+    # 9000 long-term sale + 1000 capital gain distributions (500 of it is unrecaptured section 1250 gain, box 2b).
+    # Net long-term 10000 = 7a. Taxable income 54250 (70000 - 15750). Schedule D line 20 is No.
+    # Schedule D Tax Worksheet: the 500 of 1250 gain is taxed as ordinary income, the other 9500 gets the 0%/15%
+    # rates. Line 45 = 885 (15% part) + 5135 (ordinary 44750) = 6020. Tax table on 54250 would be 6855.
+    # The Qualified Dividends worksheet would wrongly give 5960 (it taxes the 1250 gain at 15%).
+    context = make_1040_context()
+    context.form_8949.long_term_entries["D"].append(sale(9000))
+    box_2b = dividend_entry(ordinary=0, qualified=0, cap_gain_distributions=1000)
+    box_2b["unrecaptured_sec_1250_gain"] = 500
+    context.schedule_b.dividend_entries.append(box_2b)
+
+    run_calculate(context, 60000)
+
+    assert context.schedule_d.line_20 is False
+    assert context.form_1040.line_15 == 54250
+    assert context.form_1040.line_16 == 6020
+    assert context.form_1040.line_24 == 6020
+
+
+def test_box_2b_gain_absorbed_by_a_short_term_loss_uses_the_qualified_dividends_worksheet():
+    # Same 1250 gain (500), but an 800 short-term loss wipes it out, so Schedule D line 20 is Yes.
+    # Net long-term 10000, net short-term -800, line 16 = 9200 = 7a. Taxable income 53450 (69200 - 15750).
+    # Worksheet line 3 = smaller of net long-term (10000) and line 16 (9200) = 9200. Result 5840.
+    # Tax table would be 6679. The Schedule D Tax Worksheet would wrongly give 5900.
+    context = make_1040_context()
+    context.form_8949.long_term_entries["D"].append(sale(9000))
+    context.form_8949.short_term_entries["A"].append(sale(-800))
+    box_2b = dividend_entry(ordinary=0, qualified=0, cap_gain_distributions=1000)
+    box_2b["unrecaptured_sec_1250_gain"] = 500
+    context.schedule_b.dividend_entries.append(box_2b)
+
+    run_calculate(context, 60000)
+
+    assert context.schedule_d.line_20 is True
+    assert context.form_1040.line_15 == 53450
+    assert context.form_1040.line_16 == 5840
+
+
+def test_qualified_dividends_with_no_long_term_gain_use_the_qualified_dividends_worksheet():
+    # Short-term gain 6000, long-term loss 2000: Schedule D line 17 is No, so line 22 asks about qualified dividends.
+    # Dividends 400 (250 qualified). Taxable income 48650 (64400 - 15750). Worksheet line 3 = 0 (long-term is a loss).
+    # Ordinary part is 48400, already past the 0% band (it ends at 48350), so all 250 of dividends is at 15% = 37.50.
+    # Tax on ordinary 48400 = 5573. Total 5610.50 -> 5611. Tax table on 48650 would be 5623.
+    context = make_1040_context()
+    context.form_8949.short_term_entries["A"].append(sale(6000))
+    context.form_8949.long_term_entries["D"].append(sale(-2000))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=250))
+
+    run_calculate(context, 60000)
+
+    assert context.schedule_d.line_22 is True
+    assert context.form_1040.line_15 == 48650
+    assert context.form_1040.line_16 == 5611
+
+
+def test_same_sales_without_qualified_dividends_use_the_tax_table():
+    # Same as above but none of the dividends are qualified, so Schedule D line 22 is No.
+    # Tax table on 48650: slot 48650-48700, midpoint 48675. 1192.50 + 4386 + 22% of 200 (44) = 5622.50 -> 5623.
+    context = make_1040_context()
+    context.form_8949.short_term_entries["A"].append(sale(6000))
+    context.form_8949.long_term_entries["D"].append(sale(-2000))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=0))
+
+    run_calculate(context, 60000)
+
+    assert context.schedule_d.line_22 is False
+    assert context.form_1040.line_15 == 48650
+    assert context.form_1040.line_16 == 5623
+
+
+def test_no_taxable_income_means_no_tax():
+    # 10000 wages + 1000 dividends (all qualified) is less than the 15750 standard deduction.
+    context = make_1040_context()
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=1000, qualified=1000))
+
+    run_calculate(context, 10000)
+
+    assert context.form_1040.line_15 == 0
+    assert context.form_1040.line_16 == 0
+    assert context.form_1040.line_24 == 0
+
+
+def test_married_filing_jointly_uses_the_joint_brackets():
+    # Taxable income 68500 (100000 - 31500). Slot 68500-68550, midpoint 68525.
+    # 10% of 23850 = 2385; 12% of 44675 = 5361 -> 7746
+    context = make_1040_context("married_filing_jointly")
+
+    run_calculate(context, 100000)
+
+    assert context.form_1040.line_15 == 68500
+    assert context.form_1040.line_16 == 7746
+    assert context.form_1040.line_24 == 7746
+
+
+def test_lines_17_to_24_add_up():
+    # Whatever the individual lines are, the form's arithmetic must hold.
+    context = make_1040_context()
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=5000, qualified=5000))
+
+    run_calculate(context, 60000)
+
+    f = context.form_1040
+    assert f.line_18 == f.line_16 + f.line_17
+    assert f.line_21 == f.line_19 + f.line_20
+    assert f.line_22 == max(f.line_18 - f.line_21, 0)
+    assert f.line_24 == f.line_22 + f.line_23
