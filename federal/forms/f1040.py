@@ -145,7 +145,7 @@ def calculate(filing_data):
     #TODO: If lines 13a-b get implemented, append those to the sum of line 14
     context.form_1040.line_14 = context.form_1040.line_12e
 
-    context.form_1040.line_15 = context.form_1040.line_11b - context.form_1040.line_14
+    context.form_1040.line_15 = max(context.form_1040.line_11b - context.form_1040.line_14, 0)
 
     # line_14 = line_12 #AGI - standard deduction
 
