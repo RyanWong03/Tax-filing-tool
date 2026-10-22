@@ -418,7 +418,8 @@ def test_capital_loss_is_limited_to_3000_on_line_7a():
  
     assert context.form_1040.line_7a == -3000     # loss of 5000, but only 3000 can be deducted
     assert context.form_1040.line_9 == 57000      # 60000 - 3000
-    assert context.form_1040.line_11 == 57000
+    assert context.form_1040.line_11a == 57000
+    assert context.form_1040.line_11b == 57000
     assert context.form_1040.line_15 == 41250     # 57000 - 15750
  
  
@@ -458,7 +459,8 @@ def test_taxable_income_is_never_negative():
  
     run_calculate(context, 10000)
  
-    assert context.form_1040.line_11 == 10000
+    assert context.form_1040.line_11a == 10000
+    assert context.form_1040.line_11b == 10000
     assert context.form_1040.line_14 == 15750
     assert context.form_1040.line_15 == 0         # 10000 - 15750 would be -5750, so it is 0
  
@@ -468,7 +470,7 @@ def test_married_filing_jointly_uses_the_joint_standard_deduction():
  
     run_calculate(context, 100000)
  
-    assert context.form_1040.line_12 == 31500
+    assert context.form_1040.line_12e == 31500
     assert context.form_1040.line_14 == 31500
     assert context.form_1040.line_15 == 68500     # 100000 - 31500
  
@@ -479,6 +481,7 @@ def test_no_income_at_all():
     run_calculate(context, 0)
  
     assert context.form_1040.line_9 == 0
-    assert context.form_1040.line_11 == 0
+    assert context.form_1040.line_11a == 0
+    assert context.form_1040.line_11b == 0
     assert context.form_1040.line_15 == 0
  
