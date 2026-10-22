@@ -283,19 +283,6 @@ def test_yes_no_answer_ignores_spaces_and_capitals(monkeypatch):
     assert f1040.collect_w2() == {"wages": 60000, "w2_federal_tax_withheld": 7000}
 
 # Tests for Form 1040 lines 1-15 as produced by f1040.calculate(filing_data).
-#
-# ASSUMED INTERFACE - adjust make_1040_context() / run_calculate() / form_lines() below if yours differs:
-#   * calculate() reads everything from the context (entries already collected) and filing_data["wages"].
-#     It runs aggregate_schedule_b, fills the 1040 income lines, runs aggregate_schedule_d,
-#     then fills the total income, AGI, deduction and taxable income lines.
-#   * Results are stored on context.form_1040 as line_1a, line_1z, line_2a, line_2b, line_3a, line_3b,
-#     line_7a, line_8, line_9, line_10, line_11 (11a/11b), line_12 (12e), line_13a, line_13b, line_14, line_15.
-#   * calculate() reads constants from context.constants (main.py does not put "constants" in filing_data).
-#
-# Expected values are hand-computed from the 2025 Form 1040 (standard deduction: single 15750,
-# married filing jointly 31500). They must be redone for 2026.
-# Not tested yet: Schedule 1 adjustments (line 10), QBI deduction (13a) and Schedule 1-A (13b). Those lines
-# are all 0 for now.
  
 ZERO_PRIOR = {"form_1040_line_15": 0, "schedule_d_line_7": 0, "schedule_d_line_15": 0,
               "schedule_d_line_16": 0, "schedule_d_line_21": 0}
@@ -489,21 +476,6 @@ def test_no_income_at_all():
     assert context.form_1040.line_15 == 0
 
 # ======================= Form 1040 lines 16-24 =======================
-# Paste at the end of the lines 1-15 file. Uses its helpers: make_1040_context, run_calculate,
-# interest_entry, dividend_entry, sale. No new helpers.
-#
-# Line 16 is the tax, from one of three places:
-#   * Schedule D line 20 False  -> Schedule D Tax Worksheet
-#   * Schedule D line 20 True, or Schedule D line 22 True (qualified dividends) -> Qualified Dividends and
-#     Capital Gain Tax Worksheet
-#   * otherwise -> the tax table
-# Lines 17, 19, 20 and 23 (Schedules 2, 8812 and 3) are 0 for now, so 18 = 21 = 0 + ..., 22 = 18 and 24 = 22.
-# Expected values are hand-computed with the real 2025 brackets (single and married filing jointly), and must
-# be redone for 2026. Tax under $100,000 uses the IRS $50 slot midpoint, rounded half up.
-#
-# Needs these fields on form_1040_context: line_16, line_17, line_18, line_19, line_20, line_21, line_22,
-# line_23, line_24 (line_19 and line_20 are not there yet).
-
 
 def test_tax_on_wages_only_uses_the_tax_table():
     # Taxable income 44250 (60000 - 15750). Slot 44250-44300, midpoint 44275.

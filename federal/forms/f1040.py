@@ -194,7 +194,6 @@ def calculate(filing_data):
 
     context.form_1040.line_15 = max(context.form_1040.line_11b - context.form_1040.line_14, 0)
 
-    #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
     if context.schedule_d.line_20 is True or context.schedule_d.line_22 is True:
         context.form_1040.line_16_amt = compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
     else:
