@@ -649,3 +649,21 @@ def test_lines_17_to_24_add_up():
     assert f.line_21 == f.line_19 + f.line_20
     assert f.line_22 == max(f.line_18 - f.line_21, 0)
     assert f.line_24 == f.line_22 + f.line_23
+
+def test_lines_without_a_schedule_yet_are_zero():
+    # Schedule 2 line 3 (17), Schedule 8812 (19), Schedule 3 line 8 (20) and Schedule 2 line 21 (23) are not
+    # implemented, so they are 0 for now. Change this test when each schedule is built.
+    context = make_1040_context()
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=5000, qualified=5000))
+
+    run_calculate(context, 60000)
+
+    f = context.form_1040
+    assert f.line_17 == 0
+    assert f.line_19 == 0
+    assert f.line_20 == 0
+    assert f.line_23 == 0
+    assert f.line_21 == 0                  # 19 + 20
+    assert f.line_18 == f.line_16          # 16 + 17
+    assert f.line_22 == f.line_16          # nothing to subtract
+    assert f.line_24 == f.line_16          # 22 + 23
