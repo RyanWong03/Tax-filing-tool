@@ -48,7 +48,7 @@ def collect_w2():
 
     form_data = {
         "wages": 0,
-        "federal_tax_withheld": 0,
+        "w2_federal_tax_withheld": 0,
     }
 
     while True:
