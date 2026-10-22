@@ -16,9 +16,11 @@ class form_1040_context:
         self.line_5b = 0
         self.line_5c = [] #Holds the position of each checkbox that is checked
         self.line_7a = 0
+        self.line_8 = 0
         self.line_9 = 0
-        self.line_11 = 0
-        self.line_12 = 0
+        self.line_10 = 0
+        self.line_11a = 0
+        self.line_12e = 0
         self.line_14 = 0
         self.line_15 = 0
         self.line_16 = 0
@@ -112,15 +114,38 @@ def calculate(filing_data):
 
     #Line 7a is set inside aggregate_schedule_d
     federal.forms.schedule_d.aggregate_schedule_d(context)
+
     #Note: 7b "Schedule D not required": always unchecked. We file Schedule D whenever there are sales,
     # capital gain distributions, or a loss carryover, even when Exception 1 would let us skip it.
     # "Includes child's capital gain or (loss)": always unchecked (no Form 8814) since the applicant has no children. 
-    
-    # line_9 = line_1z + line_2b + line_3b #Total income
 
-    # line_11 = line_9 #AGI
+    #TODO: Implement line 8
 
-    # line_12 = standard_deduction
+    #Total income
+    context.form_1040.line_9 = sum(x or 0 for x in (
+        context.form_1040.line_1z, context.form_1040.line_2b, context.form_1040.line_3b, context.form_1040.line_4b,
+        context.form_1040.line_5b, context.form_1040.line_6b, context.form_1040.line_7a, context.form_1040.line_8,
+    ))
+
+    #TODO: Implement line 10
+
+    #AGI
+    context.form_1040.line_11a = context.form_1040.line_9 - context.form_1040.line_10
+    context.form_1040.line_11b = context.form_1040.line_11a
+
+    #Note: Line 12a-12d checkboxes: all unchecked. We assume: not claimable as a dependent, not MFS, not
+    # dual-status, under 65, not blind. Revisit if any of these change (they change the standard deduction).
+
+    #TODO: Implement Schedule A. Then, change line 12e so it picks between standard/itemized deduction depending on the
+    #greater value.
+    context.form_1040.line_12e = standard_deduction
+
+    #TODO: Look into the necessity of implementing lines 13a-b
+
+    #TODO: If lines 13a-b get implemented, append those to the sum of line 14
+    context.form_1040.line_14 = context.form_1040.line_12e
+
+    context.form_1040.line_15 = context.form_1040.line_11b - context.form_1040.line_14
 
     # line_14 = line_12 #AGI - standard deduction
 
