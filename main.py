@@ -32,7 +32,7 @@ def main():
     w2_data = federal.forms.f1040.collect_w2()
 
     wages = w2_data["wages"]
-    w2_federal_tax_withheld = w2_data["federal_tax_withheld"]
+    w2_federal_tax_withheld = w2_data["w2_federal_tax_withheld"]
 
     filing_data = {
         'year': year,

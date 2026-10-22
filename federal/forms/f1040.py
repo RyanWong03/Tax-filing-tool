@@ -44,7 +44,7 @@ def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
 
     total_wages = 0
-    total_fed_tax_withheld = 0
+    total_w2_fed_tax_withheld = 0
 
     form_data = {
         "wages": 0,
@@ -55,10 +55,10 @@ def collect_w2():
         try:
             wages = float(input("Enter the total wages from a W-2 form (Box 1): "))
             
-            fed_tax_withheld = float(input("Enter the total federal income tax withheld from the W-2 form (Box 2): "))
+            w2_fed_tax_withheld = float(input("Enter the total federal income tax withheld from the W-2 form (Box 2): "))
 
             total_wages += wages
-            total_fed_tax_withheld += fed_tax_withheld
+            total_w2_fed_tax_withheld += w2_fed_tax_withheld
 
             more_w2 = None
             while True:
@@ -75,21 +75,29 @@ def collect_w2():
     
     #Populating return dict
     form_data["wages"] = library.irs_round(total_wages)
-    form_data["federal_tax_withheld"] = library.irs_round(total_fed_tax_withheld)
+    form_data["w2_federal_tax_withheld"] = library.irs_round(total_w2_fed_tax_withheld)
 
     return form_data
 
 def calculate(filing_data):
     context = filing_data['context']
-    constants = filing_data['constants']
+    constants = filing_data['context'].constants
     filing_status = context.filing_status
     tax_year = context.tax_year
     wages = filing_data['wages']
+    w2_federal_tax_withheld = filing_data['w2_federal_tax_withheld']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
 
     prior_year_return = library.load_prior_year_return(tax_year)
-    # line_1a = wages
-    # line_1z = line_1a #Total wages
+
+    context.form_1040.line_1a = wages
+    context.form_1040.line_1z = context.form_1040.line_1a
+
+    federal.forms.schedule_b.aggregate_schedule_b(context)
+    context.form_1040.line_2a = context.schedule_b.tax_exempt_interest
+    context.form_1040.line_2b = context.schedule_b.taxable_interest
+    context.form_1040.line_3a = context.schedule_b.qualified_dividends
+    context.form_1040.line_3b = context.schedule_b.ordinary_dividends
 
     # total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
     # line_2a = total_interest_data["tax_exempt_interest"]

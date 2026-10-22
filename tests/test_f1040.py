@@ -27,7 +27,7 @@ def add_long_term_sale(context):
     context.form_8949.long_term_entries["D"].append({
         "description": "test", "date_acquired": "01/01/2024", "date_sold": "06/01/2025",
         "proceeds": 8000, "cost_basis": 3000, "adjustments": 0, "adjustment_code": None,
-        "gain": 5000, "federal_tax_withheld": 0, "state_tax_withheld": 0
+        "gain": 5000, "w2_federal_tax_withheld": 0, "state_tax_withheld": 0
     })
 
 def read_saved(tmp_path):
@@ -241,43 +241,243 @@ def type_answers(monkeypatch, answers):
 
 def test_single_w2(monkeypatch):
     type_answers(monkeypatch, ["50000", "6000", "no"])
-    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+    assert f1040.collect_w2() == {"wages": 50000, "w2_federal_tax_withheld": 6000}
 
 def test_two_w2s_are_added_together(monkeypatch):
     type_answers(monkeypatch, ["50000", "6000", "yes", "20000", "2500", "no"])
-    assert f1040.collect_w2() == {"wages": 70000, "federal_tax_withheld": 8500}
+    assert f1040.collect_w2() == {"wages": 70000, "w2_federal_tax_withheld": 8500}
 
 def test_three_w2s_are_added_together(monkeypatch):
     type_answers(monkeypatch, ["10000", "1000", "yes", "20000", "2000", "yes", "30000", "3000", "no"])
-    assert f1040.collect_w2() == {"wages": 60000, "federal_tax_withheld": 6000}
+    assert f1040.collect_w2() == {"wages": 60000, "w2_federal_tax_withheld": 6000}
 
 def test_totals_are_rounded_to_whole_dollars(monkeypatch):
     # Wages 1000.50 rounds up to 1001. Withholding 100.49 rounds down to 100.
     type_answers(monkeypatch, ["1000.50", "100.49", "no"])
-    assert f1040.collect_w2() == {"wages": 1001, "federal_tax_withheld": 100}
+    assert f1040.collect_w2() == {"wages": 1001, "w2_federal_tax_withheld": 100}
 
 def test_rounding_happens_on_the_total_not_each_form(monkeypatch):
     # 0.40 + 0.40 = 0.80 rounds to 1. If each were rounded first, both would round to 0 and the total would be 0.
     type_answers(monkeypatch, ["10000.40", "0", "yes", "20000.40", "0", "no"])
-    assert f1040.collect_w2() == {"wages": 30001, "federal_tax_withheld": 0}
+    assert f1040.collect_w2() == {"wages": 30001, "w2_federal_tax_withheld": 0}
 
 def test_zero_withholding(monkeypatch):
     type_answers(monkeypatch, ["30000", "0", "no"])
-    assert f1040.collect_w2() == {"wages": 30000, "federal_tax_withheld": 0}
+    assert f1040.collect_w2() == {"wages": 30000, "w2_federal_tax_withheld": 0}
 
 def test_non_numeric_wages_asks_again(monkeypatch):
     type_answers(monkeypatch, ["abc", "50000", "6000", "no"])
-    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+    assert f1040.collect_w2() == {"wages": 50000, "w2_federal_tax_withheld": 6000}
 
 def test_non_numeric_withholding_asks_again_without_double_counting(monkeypatch):
     # Wages are typed, then the withholding is bad. The form restarts, and the wages must not be counted twice.
     type_answers(monkeypatch, ["50000", "xyz", "50000", "6000", "no"])
-    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+    assert f1040.collect_w2() == {"wages": 50000, "w2_federal_tax_withheld": 6000}
 
 def test_invalid_yes_no_answer_asks_again(monkeypatch):
     type_answers(monkeypatch, ["50000", "6000", "maybe", "no"])
-    assert f1040.collect_w2() == {"wages": 50000, "federal_tax_withheld": 6000}
+    assert f1040.collect_w2() == {"wages": 50000, "w2_federal_tax_withheld": 6000}
 
 def test_yes_no_answer_ignores_spaces_and_capitals(monkeypatch):
     type_answers(monkeypatch, ["50000", "6000", "  YES ", "10000", "1000", "No"])
-    assert f1040.collect_w2() == {"wages": 60000, "federal_tax_withheld": 7000}
+    assert f1040.collect_w2() == {"wages": 60000, "w2_federal_tax_withheld": 7000}
+
+# Tests for Form 1040 lines 1-15 as produced by f1040.calculate(filing_data).
+#
+# ASSUMED INTERFACE - adjust make_1040_context() / run_calculate() / form_lines() below if yours differs:
+#   * calculate() reads everything from the context (entries already collected) and filing_data["wages"].
+#     It runs aggregate_schedule_b, fills the 1040 income lines, runs aggregate_schedule_d,
+#     then fills the total income, AGI, deduction and taxable income lines.
+#   * Results are stored on context.form_1040 as line_1a, line_1z, line_2a, line_2b, line_3a, line_3b,
+#     line_7a, line_8, line_9, line_10, line_11 (11a/11b), line_12 (12e), line_13a, line_13b, line_14, line_15.
+#   * calculate() reads constants from context.constants (main.py does not put "constants" in filing_data).
+#
+# Expected values are hand-computed from the 2025 Form 1040 (standard deduction: single 15750,
+# married filing jointly 31500). They must be redone for 2026.
+# Not tested yet: Schedule 1 adjustments (line 10), QBI deduction (13a) and Schedule 1-A (13b). Those lines
+# are all 0 for now.
+ 
+ZERO_PRIOR = {"form_1040_line_15": 0, "schedule_d_line_7": 0, "schedule_d_line_15": 0,
+              "schedule_d_line_16": 0, "schedule_d_line_21": 0}
+ 
+ 
+def make_1040_context(filing_status="single"):
+    context = tax_context.tax_context(YEAR)
+    context.constants = TAX_YEAR
+    context.filing_status = filing_status
+    return context
+ 
+ 
+def run_calculate(context, wages):
+    # Saved so the prior-year lookup does not stop to ask questions.
+    library.save_tax_return(YEAR - 1, ZERO_PRIOR)
+    f1040.calculate({"year": YEAR, "wages": wages, "w2_federal_tax_withheld": 0, "context": context})
+ 
+ 
+def form_lines(context):
+    f = context.form_1040
+    return {
+        "1a": f.line_1a, "1z": f.line_1z, "2a": f.line_2a, "2b": f.line_2b,
+        "3a": f.line_3a, "3b": f.line_3b, "7a": f.line_7a, "8": f.line_8,
+        "9": f.line_9, "10": f.line_10, "11": f.line_11, "12": f.line_12,
+        "13a": f.line_13a, "13b": f.line_13b, "14": f.line_14, "15": f.line_15,
+    }
+ 
+ 
+def interest_entry(amount, bond_interest=0, tax_exempt_interest=0):
+    return {"payer": "Test Bank", "amount": amount, "bond_interest": bond_interest,
+            "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": tax_exempt_interest}
+ 
+ 
+def dividend_entry(ordinary=0, qualified=0, cap_gain_distributions=0):
+    return {"payer": "Fidelity", "ordinary_dividends": ordinary, "qualified_dividends": qualified,
+            "cap_gain_distributions": cap_gain_distributions, "unrecaptured_sec_1250_gain": 0,
+            "fed_tax_withheld": 0, "section_199a_dividends": 0}
+ 
+ 
+def sale(gain):
+    return {"description": "test", "date_acquired": "01/01/2024", "date_sold": "06/01/2025",
+            "proceeds": 10000 + gain, "cost_basis": 10000, "adjustments": 0, "adjustment_code": None,
+            "gain": gain, "w2_federal_tax_withheld": 0, "state_tax_withheld": 0}
+ 
+ 
+def test_wages_only():
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000)
+ 
+    assert form_lines(context) == {
+        "1a": 60000, "1z": 60000,
+        "2a": 0, "2b": 0, "3a": 0, "3b": 0,
+        "7a": 0, "8": 0,
+        "9": 60000,       # wages only
+        "10": 0,
+        "11": 60000,      # 60000 - 0
+        "12": 15750,      # single standard deduction
+        "13a": 0, "13b": 0,
+        "14": 15750,
+        "15": 44250,      # 60000 - 15750
+    }
+ 
+ 
+def test_interest_and_dividends_are_added_and_tax_exempt_interest_is_not():
+    context = make_1040_context()
+    # Interest 1000.60 + savings bond interest 300 = 1300.60 -> 1301. Tax-exempt interest 200 is shown on 2a only.
+    context.schedule_b.interest_entries.append(interest_entry(1000.60, bond_interest=300, tax_exempt_interest=200))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=250))
+ 
+    run_calculate(context, 60000)
+ 
+    assert form_lines(context) == {
+        "1a": 60000, "1z": 60000,
+        "2a": 200,        # tax-exempt interest, not part of income
+        "2b": 1301,
+        "3a": 250,        # qualified dividends, not added again
+        "3b": 400,
+        "7a": 0, "8": 0,
+        "9": 61701,       # 60000 + 1301 + 400
+        "10": 0,
+        "11": 61701,
+        "12": 15750,
+        "13a": 0, "13b": 0,
+        "14": 15750,
+        "15": 45951,      # 61701 - 15750
+    }
+ 
+ 
+def test_capital_gains_reach_line_7a_and_total_income():
+    context = make_1040_context()
+    context.form_8949.short_term_entries["A"].append(sale(1000))
+    context.form_8949.long_term_entries["D"].append(sale(5000))
+    # 200 of capital gain distributions: part of the long-term total, not part of ordinary dividends (3b).
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=0, qualified=0, cap_gain_distributions=200))
+ 
+    run_calculate(context, 60000)
+ 
+    assert form_lines(context) == {
+        "1a": 60000, "1z": 60000,
+        "2a": 0, "2b": 0, "3a": 0, "3b": 0,
+        "7a": 6200,       # short-term 1000 + long-term 5000 + distributions 200
+        "8": 0,
+        "9": 66200,       # 60000 + 6200
+        "10": 0,
+        "11": 66200,
+        "12": 15750,
+        "13a": 0, "13b": 0,
+        "14": 15750,
+        "15": 50450,      # 66200 - 15750
+    }
+ 
+ 
+def test_capital_loss_is_limited_to_3000_on_line_7a():
+    context = make_1040_context()
+    context.form_8949.long_term_entries["D"].append(sale(-5000))
+ 
+    run_calculate(context, 60000)
+ 
+    assert context.form_1040.line_7a == -3000     # loss of 5000, but only 3000 can be deducted
+    assert context.form_1040.line_9 == 57000      # 60000 - 3000
+    assert context.form_1040.line_11 == 57000
+    assert context.form_1040.line_15 == 41250     # 57000 - 15750
+ 
+ 
+def test_qualified_dividends_are_on_line_3a_before_schedule_d_runs():
+    # A 6000 short-term gain and a 2000 long-term loss: net gain 4000 but no long-term gain, so Schedule D line 17
+    # is No and line 22 asks "do you have qualified dividends on 1040 line 3a?". That only works if line 3a was
+    # filled in before Schedule D ran.
+    context = make_1040_context()
+    context.form_8949.short_term_entries["A"].append(sale(6000))
+    context.form_8949.long_term_entries["D"].append(sale(-2000))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=250))
+ 
+    run_calculate(context, 60000)
+ 
+    assert context.form_1040.line_3a == 250
+    assert context.schedule_d.line_17 is False
+    assert context.schedule_d.line_22 is True
+    assert context.form_1040.line_7a == 4000
+    assert context.form_1040.line_9 == 64400      # 60000 + 400 + 4000
+    assert context.form_1040.line_15 == 48650     # 64400 - 15750
+ 
+ 
+def test_schedule_d_line_22_is_false_without_qualified_dividends():
+    context = make_1040_context()
+    context.form_8949.short_term_entries["A"].append(sale(6000))
+    context.form_8949.long_term_entries["D"].append(sale(-2000))
+    context.schedule_b.dividend_entries.append(dividend_entry(ordinary=400, qualified=0))
+ 
+    run_calculate(context, 60000)
+ 
+    assert context.form_1040.line_3a == 0
+    assert context.schedule_d.line_22 is False
+ 
+ 
+def test_taxable_income_is_never_negative():
+    context = make_1040_context()
+ 
+    run_calculate(context, 10000)
+ 
+    assert context.form_1040.line_11 == 10000
+    assert context.form_1040.line_14 == 15750
+    assert context.form_1040.line_15 == 0         # 10000 - 15750 would be -5750, so it is 0
+ 
+ 
+def test_married_filing_jointly_uses_the_joint_standard_deduction():
+    context = make_1040_context("married_filing_jointly")
+ 
+    run_calculate(context, 100000)
+ 
+    assert context.form_1040.line_12 == 31500
+    assert context.form_1040.line_14 == 31500
+    assert context.form_1040.line_15 == 68500     # 100000 - 31500
+ 
+ 
+def test_no_income_at_all():
+    context = make_1040_context()
+ 
+    run_calculate(context, 0)
+ 
+    assert context.form_1040.line_9 == 0
+    assert context.form_1040.line_11 == 0
+    assert context.form_1040.line_15 == 0
+ 

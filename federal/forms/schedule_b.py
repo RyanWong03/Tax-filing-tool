@@ -115,7 +115,8 @@ def collect_1099_div(context):
 
             fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-DIV form (Box 4): ")))
 
-            #box 5, section 199a dividends, need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
+            #box 5, section 199a dividends
+            # TODO: need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
             section_199a_dividends = library.irs_round(float(input("Enter the total Section 199A dividends from the 1099-DIV form (Box 5): ")))
 
             context.schedule_b.dividend_entries.append({
