@@ -267,19 +267,6 @@ def calculate(filing_data):
     context.form_1040.line_37 = context.form_1040.line_24 - context.form_1040.line_33
 
     #TODO: Implement line 38
-    
-    # line_36 = 0 #Default amount
-    # while True:
-    #     line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
-    #     if(line_36 > line_34):
-    #         print("You cannot apply more than your total refund to estimated taxes. Please try again.")
-    #     else:
-    #         break
-
-    # line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
-
-    # print(f"Amount of tax owed: ${line_37:.2f}")
-    # line_38 = 0 #For the sake of this, ignore penalties...
 
 #Computes the Qualified Dividends and Capital Gain Tax Worksheet and saves it to the user's local app data directory.
 #Arguments:

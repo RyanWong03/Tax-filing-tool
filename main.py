@@ -55,15 +55,24 @@ def main():
 
     refund = context.form_1040.line_34
     if refund > 0:
-        filing_data["amount_refunded_to_taxpayer"] = round(input("Enter the amount based on line 34 that you want \
-                                                                 refunded to you."), 2)
-        #TODO: Implement routing/account number and type of bank account.
-        filing_data["apply_estimated_tax_next_year"] = round(input(f"Enter the amount based on line 34 that you want \
-                                                                   applied to your {tax_year + 1} estimated tax"), 2)
+        while True:
+            filing_data["amount_refunded_to_taxpayer"] = round(input("Enter the amount based on line 34 that you want \
+                                                                    refunded to you."), 2)
+            #TODO: Implement routing/account number and type of bank account.
+            filing_data["apply_estimated_tax_next_year"] = round(input(f"Enter the amount based on line 34 that you want \
+                                                                    applied to your {tax_year + 1} estimated tax"), 2)
 
-    #Calling calculate a second time just for refund and estimated tax.
-    #Not sure if best way but for now, will suffice.
-    federal.forms.f1040.calculate(filing_data)
+            if filing_data["amount_refunded_to_taxpayer"] >= 0 and \
+            filing_data["apply_estimated_tax_next_year"] >= 0 and \
+            filing_data["amount_refunded_to_taxpayer"] + filing_data["apply_estimated_tax_next_year"]  == refund:
+                break
+
+            #If we reached here, the taxpayer's math is incorrect and needs to be redone.
+            print(f"The two amounts must add up to ${refund}. Please try again.")
+
+        #Calling calculate a second time just for refund and estimated tax.
+        #Not sure if best way but for now, will suffice.
+        federal.forms.f1040.calculate(filing_data)
 
 
 if __name__ == "__main__":

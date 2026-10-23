@@ -295,10 +295,11 @@ def make_1040_context(filing_status="single"):
     return context
  
  
-def run_calculate(context, wages, withheld=0):
+def run_calculate(context, wages, withheld=0, amount_refunded_to_taxpayer=0, apply_estimated_tax_next_year=0):
     library.save_tax_return(YEAR - 1, ZERO_PRIOR)
-    f1040.calculate({"year": YEAR, "wages": wages, "w2_federal_tax_withheld": withheld, "context": context,
-                     "amount_refunded_to_taxpayer": 0, "apply_estimated_tax_next_year": 0})
+    f1040.calculate({"year": YEAR, "wages": wages, "w2_federal_tax_withheld": withheld,
+                    "amount_refunded_to_taxpayer": amount_refunded_to_taxpayer,
+                    "apply_estimated_tax_next_year": apply_estimated_tax_next_year, "context": context})
 
 def form_lines(context):
     f = context.form_1040
@@ -886,26 +887,48 @@ def test_married_filing_jointly_withholding():
     assert context.form_1040.line_25a == 9000
     assert context.form_1040.line_33 == 9000
 
-# ======================= Form 1040 lines 34-38 =======================
-# Uses run_calculate(context, wages, withheld=0) from the lines 25-33 tests. No new helpers.
-# Wages 60000 -> taxable income 44250 -> tax 5075 (see the line 16 tests).
+# ======================= Form 1040 lines 34-38 (user supplies both refund amounts) =======================
+# Wages 60000 -> taxable income 44250 -> tax 5075.
 
-def test_withholding_more_than_tax_is_a_refund():
+def test_whole_refund_sent_to_taxpayer():
     context = make_1040_context()
 
-    run_calculate(context, 60000, withheld=6000)
+    run_calculate(context, 60000, withheld=6000, amount_refunded_to_taxpayer=925)
 
     f = context.form_1040
     assert f.line_24 == 5075
     assert f.line_33 == 6000
     assert f.line_34 == 925        # 6000 - 5075 overpaid
-    assert f.line_35a_amt == 925       # all of it refunded
+    assert f.line_35a_amt == 925
     assert f.line_36 == 0
     assert f.line_37 == 0
     assert f.line_38 == 0
 
 
-def test_withholding_less_than_tax_means_amount_owed():
+def test_whole_refund_applied_to_next_years_estimated_tax():
+    context = make_1040_context()
+
+    run_calculate(context, 60000, withheld=6000, apply_estimated_tax_next_year=925)
+
+    f = context.form_1040
+    assert f.line_34 == 925
+    assert f.line_35a_amt == 0
+    assert f.line_36 == 925
+
+
+def test_refund_split_between_taxpayer_and_estimated_tax():
+    context = make_1040_context()
+
+    run_calculate(context, 60000, withheld=6000, amount_refunded_to_taxpayer=625, apply_estimated_tax_next_year=300)
+
+    f = context.form_1040
+    assert f.line_34 == 925
+    assert f.line_35a_amt == 625
+    assert f.line_36 == 300
+    assert f.line_35a_amt + f.line_36 == f.line_34
+
+
+def test_amount_owed_when_withholding_is_less_than_tax():
     context = make_1040_context()
 
     run_calculate(context, 60000, withheld=3000)
@@ -927,19 +950,18 @@ def test_withholding_exactly_equal_to_tax_owes_and_refunds_nothing():
     f = context.form_1040
     assert f.line_34 == 0
     assert f.line_35a_amt == 0
+    assert f.line_36 == 0
     assert f.line_37 == 0
 
 
 def test_refund_counts_1099_withholding_too():
     # 5000 from the W-2 + 125 from a 1099-INT = 5125 paid in, tax 5075 -> refund 50.
-    # (Interest of 1000 raises taxable income, so use a 1099 with no extra income: withholding only matters here
-    #  for line 33, so check the arithmetic against the tax the program actually computed.)
     context = make_1040_context()
     interest = interest_entry(0)
-    interest["fed_tax_withheld"] = 125
+    interest["federal_tax_withheld"] = 125
     context.schedule_b.interest_entries.append(interest)
 
-    run_calculate(context, 60000, withheld=5000)
+    run_calculate(context, 60000, withheld=5000, amount_refunded_to_taxpayer=50)
 
     f = context.form_1040
     assert f.line_25b == 125
@@ -954,7 +976,7 @@ def test_no_tax_and_all_withholding_refunded():
     # 10000 wages is under the standard deduction, so no tax. Everything withheld comes back.
     context = make_1040_context()
 
-    run_calculate(context, 10000, withheld=500)
+    run_calculate(context, 10000, withheld=500, amount_refunded_to_taxpayer=500)
 
     f = context.form_1040
     assert f.line_24 == 0
@@ -963,7 +985,7 @@ def test_no_tax_and_all_withholding_refunded():
     assert f.line_37 == 0
 
 
-def test_no_refund_and_no_amount_owed_when_nothing_is_taxed_or_withheld():
+def test_nothing_taxed_or_withheld_means_no_refund_and_nothing_owed():
     context = make_1040_context()
 
     run_calculate(context, 0)
@@ -971,18 +993,21 @@ def test_no_refund_and_no_amount_owed_when_nothing_is_taxed_or_withheld():
     f = context.form_1040
     assert f.line_34 == 0
     assert f.line_35a_amt == 0
+    assert f.line_36 == 0
     assert f.line_37 == 0
 
 
-def test_line_36_is_zero_and_refund_is_line_34_minus_line_36():
-    # Nothing is applied to next year's estimated tax, so 35a_amt is all of line 34.
+def test_refund_amounts_are_ignored_when_there_is_no_refund():
+    # The user's answers only matter when line 34 is above 0.
     context = make_1040_context()
 
-    run_calculate(context, 60000, withheld=6000)
+    run_calculate(context, 60000, withheld=3000, amount_refunded_to_taxpayer=100, apply_estimated_tax_next_year=100)
 
     f = context.form_1040
+    assert f.line_34 == 0
+    assert f.line_35a_amt == 0
     assert f.line_36 == 0
-    assert f.line_35a_amt == f.line_34 - f.line_36
+    assert f.line_37 == 2075
 
 
 def test_line_38_estimated_tax_penalty_is_zero_for_now():
@@ -997,7 +1022,7 @@ def test_line_38_estimated_tax_penalty_is_zero_for_now():
 def test_never_a_refund_and_an_amount_owed_at_the_same_time():
     for withheld in (0, 1000, 5074, 5075, 5076, 9000):
         context = make_1040_context()
-        run_calculate(context, 60000, withheld=withheld)
+        run_calculate(context, 60000, withheld=withheld, amount_refunded_to_taxpayer=max(withheld - 5075, 0))
         f = context.form_1040
         assert f.line_34 == 0 or f.line_37 == 0, withheld
         assert f.line_34 - f.line_37 == f.line_33 - f.line_24, withheld     # one of them is the difference
@@ -1007,7 +1032,7 @@ def test_married_filing_jointly_refund():
     # Tax 7746 (see the line 16 MFJ test), withheld 9000 -> refund 1254.
     context = make_1040_context("married_filing_jointly")
 
-    run_calculate(context, 100000, withheld=9000)
+    run_calculate(context, 100000, withheld=9000, amount_refunded_to_taxpayer=1254)
 
     f = context.form_1040
     assert f.line_34 == 1254
