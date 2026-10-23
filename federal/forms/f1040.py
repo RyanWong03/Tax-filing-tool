@@ -264,7 +264,7 @@ def calculate(filing_data):
         context.form_1040.line_36 = estimated_tax_next_year
 
     #Tax owed
-    context.form_1040.line_37 = context.form_1040.line_24 - context.form_1040.line_33
+    context.form_1040.line_37 = max(context.form_1040.line_24 - context.form_1040.line_33, 0)
 
     #TODO: Implement line 38
 
