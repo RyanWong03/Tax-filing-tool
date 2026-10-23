@@ -335,3 +335,27 @@ def save_current_year_return(context):
         "schedule_d_line_21": context.schedule_d.line_21,
     }
     library.save_tax_return(context.tax_year, tax_return)
+
+
+def print_summary(context):
+    f = context.form_1040
+    d = context.schedule_d
+    rows = [
+        ("Total income (line 9)", f.line_9),
+        ("Adjusted gross income (line 11)", f.line_11b),
+        ("Standard deduction (line 12e)", f.line_12e),
+        ("Taxable income (line 15)", f.line_15),
+        ("Tax (line 16)", f.line_16_amt),
+        ("Total tax (line 24)", f.line_24),
+        ("Total payments (line 33)", f.line_33),
+        ("Overpaid / refund (line 34)", f.line_34),
+        ("Refunded to you (line 35a)", f.line_35a_amt),
+        ("Applied to estimated tax (line 36)", f.line_36),
+        ("Amount you owe (line 37)", f.line_37),
+        ("Capital gain or loss (line 7a)", f.line_7a),
+        ("Schedule D net short-term (line 7)", d.net_short_term_gain_loss),
+        ("Schedule D net long-term (line 15)", d.net_long_term_gain_loss),
+    ]
+    print("\n=== RETURN SUMMARY ===")
+    for label, value in rows:
+        print(f"{label:<40} ${value:,}")
