@@ -68,7 +68,7 @@ def main():
 
             if filing_data["amount_refunded_to_taxpayer"] >= 0 and \
             filing_data["apply_estimated_tax_next_year"] >= 0 and \
-            filing_data["amount_refunded_to_taxpayer"] + filing_data["apply_estimated_tax_next_year"]  == refund:
+            filing_data["amount_refunded_to_taxpayer"] + filing_data["apply_estimated_tax_next_year"] == refund:
                 break
 
             #If we reached here, the taxpayer's math is incorrect and needs to be redone.
