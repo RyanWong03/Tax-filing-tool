@@ -54,8 +54,18 @@ class schedule_d_context:
         self.line_21 = 0
         self.line_22 = None
 
+        self.federal_tax_withheld = 0
+
 #Main schedule D function. Handles everything in Schedule D form.
 def aggregate_schedule_d(context, prior_year_return):
+    #Federal tax withheld calculation for Form 1040
+    context.schedule_d.federal_tax_withheld = library.irs_round(
+        sum(item["federal_tax_withheld"] for items in context.form_8949.short_term_entries.values() for item in items)
+    )
+    context.schedule_d.federal_tax_withheld += library.irs_round(
+        sum(item["federal_tax_withheld"] for items in context.form_8949.long_term_entries.values() for item in items)
+    )
+
     context.schedule_d.disposal_qof = False #Hardcode for now since irrevelant for us.
     
     #Short term

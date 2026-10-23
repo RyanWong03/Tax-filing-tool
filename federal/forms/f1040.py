@@ -222,7 +222,7 @@ def calculate(filing_data):
     context.form_1040.line_25a = w2_federal_tax_withheld
     context.form_1040.line_25b = sum([context.schedule_b.federal_tax_withheld_interest,
                                      context.schedule_b.federal_tax_withheld_dividends,
-                                     context.form_8949.federal_tax_withheld])
+                                     context.schedule_d.federal_tax_withheld])
     context.form_1040.line_25d = sum([context.form_1040.line_25a,
                                      context.form_1040.line_25b,
                                      context.form_1040.line_25c])
