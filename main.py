@@ -3,6 +3,7 @@ import federal.forms.f1040
 import federal.forms.form_8949
 import federal.forms.schedule_b
 import tax_context
+import library
 
 def load_year(year):
     try:
@@ -56,11 +57,14 @@ def main():
     refund = context.form_1040.line_34
     if refund > 0:
         while True:
-            filing_data["amount_refunded_to_taxpayer"] = round(input("Enter the amount based on line 34 that you want \
-                                                                    refunded to you."), 2)
+            filing_data["amount_refunded_to_taxpayer"] = library.irs_round(float(input("Enter the amount based on line 34 that you want \
+                                                                    refunded to you. Note: the amount you put will be \
+                                                                    rounded to the nearest whole number.")))
             #TODO: Implement routing/account number and type of bank account.
-            filing_data["apply_estimated_tax_next_year"] = round(input(f"Enter the amount based on line 34 that you want \
-                                                                    applied to your {tax_year + 1} estimated tax"), 2)
+            filing_data["apply_estimated_tax_next_year"] = library.irs_round(float(input(f"Enter the amount based on \
+                                                                    line 34 that you want applied to your {year + 1} \
+                                                                    estimated tax. Note: the amount you put will be \
+                                                                    rounded to the nearest whole number.")))
 
             if filing_data["amount_refunded_to_taxpayer"] >= 0 and \
             filing_data["apply_estimated_tax_next_year"] >= 0 and \
