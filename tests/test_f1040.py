@@ -295,12 +295,10 @@ def make_1040_context(filing_status="single"):
     return context
  
  
-def run_calculate(context, wages):
-    # Saved so the prior-year lookup does not stop to ask questions.
+def run_calculate(context, wages, withheld=0):
     library.save_tax_return(YEAR - 1, ZERO_PRIOR)
-    f1040.calculate({"year": YEAR, "wages": wages, "w2_federal_tax_withheld": 0, "context": context})
- 
- 
+    f1040.calculate({"year": YEAR, "wages": wages, "w2_federal_tax_withheld": withheld, "context": context})
+
 def form_lines(context):
     f = context.form_1040
     return {
@@ -741,3 +739,151 @@ def test_wages_only_does_not_run_any_worksheet(tmp_path):
 
     assert not (tmp_path / f"schedule_d_tax_worksheet_{YEAR}.json").exists()
     assert not (tmp_path / f"qualified_dividends_and_capital_gain_tax_worksheet_{YEAR}.json").exists()
+
+# ======================= Form 1040 lines 25-33 =======================
+ 
+def test_w2_withholding_goes_to_line_25a_and_flows_to_total_payments():
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    f = context.form_1040
+    assert f.line_25a == 6000
+    assert f.line_25b == 0
+    assert f.line_25c == 0
+    assert f.line_25d == 6000
+    assert f.line_33 == 6000
+ 
+ 
+def test_no_withholding_means_every_payment_line_is_zero():
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000)
+ 
+    f = context.form_1040
+    for name in ["line_25a", "line_25b", "line_25c", "line_25d", "line_26", "line_27a", "line_28_actc_amt",
+                 "line_29", "line_30", "line_31", "line_32", "line_33"]:
+        assert getattr(f, name) == 0, name
+ 
+ 
+def test_1099_withholding_goes_to_line_25b_not_25a():
+    # 1099-INT box 4 = 80 and 1099-DIV box 4 = 45 -> 125 on line 25b. W-2 withholding (6000) stays on 25a.
+    context = make_1040_context()
+    interest = interest_entry(1000)
+    interest["fed_tax_withheld"] = 80
+    dividend = dividend_entry(ordinary=500, qualified=300)
+    dividend["fed_tax_withheld"] = 45
+    context.schedule_b.interest_entries.append(interest)
+    context.schedule_b.dividend_entries.append(dividend)
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    f = context.form_1040
+    assert f.line_25a == 6000
+    assert f.line_25b == 125
+    assert f.line_25c == 0
+    assert f.line_25d == 6125      # 6000 + 125 + 0
+    assert f.line_33 == 6125
+ 
+ 
+def test_withholding_from_several_1099s_is_added_together():
+    context = make_1040_context()
+    for amount in (10, 20):
+        entry = interest_entry(500)
+        entry["fed_tax_withheld"] = amount
+        context.schedule_b.interest_entries.append(entry)
+    dividend = dividend_entry(ordinary=400, qualified=0)
+    dividend["fed_tax_withheld"] = 5
+    context.schedule_b.dividend_entries.append(dividend)
+ 
+    run_calculate(context, 60000)
+ 
+    assert context.form_1040.line_25b == 35      # 10 + 20 + 5
+    assert context.form_1040.line_25d == 35
+ 
+ 
+def test_1099_b_withholding_goes_to_line_25b():
+    # Assumes your 1099-B entries' "w2_federal_tax_withheld" key (box 4) is counted in line 25b.
+    # If you decide 1099-B withholding is out of scope, delete this test.
+    context = make_1040_context()
+    entry = sale(5000)
+    entry["w2_federal_tax_withheld"] = 200
+    context.form_8949.long_term_entries["D"].append(entry)
+ 
+    run_calculate(context, 60000)
+ 
+    assert context.form_1040.line_25b == 200
+    assert context.form_1040.line_33 == 200
+ 
+ 
+def test_line_25c_other_forms_is_zero():
+    # 25c is withholding from other forms (1099-R, W-2G, etc.). None are collected.
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    assert context.form_1040.line_25c == 0
+ 
+ 
+def test_line_26_estimated_tax_payments_is_zero():
+    # No estimated payments and no prior-year overpayment applied (prior-year line 36 is not carried over yet).
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    assert context.form_1040.line_26 == 0
+ 
+ 
+def test_credits_without_a_schedule_are_zero_and_boxes_unchecked():
+    # 27a EIC: you must be 25-64 with no qualifying child, so it is 0 for a young single filer with no kids.
+    # 28 (ACTC, Schedule 8812), 29 (American opportunity credit, Form 8863) and 31 (Schedule 3 line 15) are not
+    # implemented, so they are 0 for now. Line 30 is not used on the 2025 form. Change this test when each is built.
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    f = context.form_1040
+    assert f.line_27a == 0
+    assert f.line_27b is False
+    assert f.line_27c is False
+    assert f.line_28_reject_actc_claim is False
+    assert f.line_28_actc_amt == 0
+    assert f.line_29 == 0
+    assert f.line_30 == 0
+    assert f.line_31 == 0
+    assert f.line_32 == 0
+ 
+ 
+def test_lines_25_to_33_add_up():
+    # Whatever the individual lines are, the form's arithmetic must hold.
+    context = make_1040_context()
+    interest = interest_entry(1000)
+    interest["fed_tax_withheld"] = 80
+    context.schedule_b.interest_entries.append(interest)
+ 
+    run_calculate(context, 60000, withheld=6000)
+ 
+    f = context.form_1040
+    assert f.line_25d == f.line_25a + f.line_25b + f.line_25c
+    assert f.line_32 == f.line_27a + f.line_28_actc_amt + f.line_29 + f.line_31    # line 30 not used in 2025
+    assert f.line_33 == f.line_25d + f.line_26 + f.line_32
+ 
+ 
+def test_total_payments_are_not_limited_to_the_tax_owed():
+    # Withholding of 20000 is more than the 5075 of tax. Line 33 still shows all 20000 (the extra is the refund on 34).
+    context = make_1040_context()
+ 
+    run_calculate(context, 60000, withheld=20000)
+ 
+    assert context.form_1040.line_16_amt == 5075
+    assert context.form_1040.line_33 == 20000
+ 
+ 
+def test_married_filing_jointly_withholding():
+    context = make_1040_context("married_filing_jointly")
+ 
+    run_calculate(context, 100000, withheld=9000)
+ 
+    assert context.form_1040.line_25a == 9000
+    assert context.form_1040.line_33 == 9000
+ 
