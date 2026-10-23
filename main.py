@@ -42,13 +42,27 @@ def main():
         'year': year,
         'wages': wages,
         'w2_federal_tax_withheld': w2_federal_tax_withheld,
-        'context': context
+        'context': context,
+        'amount_refunded_to_taxpayer': 0,
+        'apply_estimated_tax_next_year': 0,
     }
 
     federal.forms.schedule_b.collect_1099_int(context)
     federal.forms.schedule_b.collect_1099_div(context)
     federal.forms.form_8949.collect_1099_b_short_term(context)
     federal.forms.form_8949.collect_1099_b_long_term(context)
+    federal.forms.f1040.calculate(filing_data)
+
+    refund = context.form_1040.line_34
+    if refund > 0:
+        filing_data["amount_refunded_to_taxpayer"] = round(input("Enter the amount based on line 34 that you want \
+                                                                 refunded to you."), 2)
+        #TODO: Implement routing/account number and type of bank account.
+        filing_data["apply_estimated_tax_next_year"] = round(input(f"Enter the amount based on line 34 that you want \
+                                                                   applied to your {tax_year + 1} estimated tax"), 2)
+
+    #Calling calculate a second time just for refund and estimated tax.
+    #Not sure if best way but for now, will suffice.
     federal.forms.f1040.calculate(filing_data)
 
 

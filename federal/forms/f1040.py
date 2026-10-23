@@ -89,6 +89,12 @@ class form_1040_context:
         self.line_32 = 0
         self.line_33 = 0
         self.line_34 = 0
+        self.line_35a_form_8888 = False
+        self.line_35a_amt = 0
+        self.line_35b_routing_number = ""
+        self.line_35c_checking_account = False
+        self.line_35c_saving_account = False
+        self.line_35d_account_number = ""
         self.line_36 = 0
         self.line_37 = 0
         self.line_38 = 0
@@ -140,6 +146,8 @@ def calculate(filing_data):
     wages = filing_data['wages']
     w2_federal_tax_withheld = filing_data['w2_federal_tax_withheld']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
+    refund_amound_to_taxpayer = filing_data['amount_refunded_to_taxpayer']
+    estimated_tax_next_year = filing_data['apply_estimated_tax_next_year']
 
     prior_year_return = library.load_prior_year_return(tax_year)
 
@@ -244,10 +252,22 @@ def calculate(filing_data):
 
     context.form_1040.line_33 = sum([context.form_1040.line_25d, context.form_1040.line_26, context.form_1040.line_32])
 
-    # line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
+    if context.form_1040.line_33 > context.form_1040.line_24:
+        context.form_1040.line_34 = context.form_1040.line_33 - context.form_1040.line_24 
 
-    # print(f"Refund amount: ${line_34:.2f}")
+    #Refund
+    #TODO: Implement line_35a_form_8888
+    if context.form_1040.line_34 > 0:
+        context.form_1040.line_35a_amt = refund_amound_to_taxpayer
+        #TODO: Implement lines 35b-d
+    
+        context.form_1040.line_36 = estimated_tax_next_year
 
+    #Tax owed
+    context.form_1040.line_37 = context.form_1040.line_24 - context.form_1040.line_33
+
+    #TODO: Implement line 38
+    
     # line_36 = 0 #Default amount
     # while True:
     #     line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
