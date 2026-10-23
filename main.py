@@ -78,6 +78,8 @@ def main():
         #Not sure if best way but for now, will suffice.
         federal.forms.f1040.calculate(filing_data)
 
+    federal.forms.f1040.save_current_year_return(context)
+
 
 if __name__ == "__main__":
     main()

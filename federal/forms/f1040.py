@@ -324,3 +324,14 @@ def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
     
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
+
+def save_current_year_return(context):
+    tax_return = {
+        "tax_year": context.tax_year,
+        "form_1040_line_15": context.form_1040.line_15,
+        "schedule_d_line_7": context.schedule_d.net_short_term_gain_loss,
+        "schedule_d_line_15": context.schedule_d.net_long_term_gain_loss,
+        "schedule_d_line_16": context.schedule_d.line_16,
+        "schedule_d_line_21": context.schedule_d.line_21,
+    }
+    library.save_tax_return(context.tax_year, tax_return)

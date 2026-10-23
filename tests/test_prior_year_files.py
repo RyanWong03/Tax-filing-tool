@@ -22,8 +22,6 @@ DEFAULT_2025 = {
     "schedule_d_line_15": 0,
     "schedule_d_line_16": 0,
     "schedule_d_line_21": 0,
-    "short_term_carryover_to_next_year": 0,
-    "long_term_carryover_to_next_year": 0,
 }
 
 # ---------- Where the files live ----------
@@ -106,8 +104,6 @@ def test_missing_file_with_prior_return_and_schedule_d(monkeypatch, tmp_path):
         "schedule_d_line_15": 0,
         "schedule_d_line_16": -8000,
         "schedule_d_line_21": -3000,
-        "short_term_carryover_to_next_year": 5000,
-        "long_term_carryover_to_next_year": 0,
     }
     assert saved_file(tmp_path, 2025) == result
 
