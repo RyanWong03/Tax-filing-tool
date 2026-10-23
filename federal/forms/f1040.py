@@ -202,19 +202,22 @@ def calculate(filing_data):
     else:
         context.form_1040.line_16_amt = library.calculate_income_tax(context.form_1040.line_15, constants.TAX_BRACKETS[filing_status])
 
-    # line_17 = 0 #Placeholder 
+    #TODO: Implement line 17
 
-    # line_18 = line_16 + line_17 
+    context.form_1040.line_18 = context.form_1040.line_16_amt + context.form_1040.line_17
 
-    # line_21 = 0 #Placeholder
+    #TODO: Implement line 19
 
-    # line_22 = 0 if line_18 - line_21 < 0 else line_18 - line_21
+    #TODO: Implement line 20
 
-    # line_23 = 0 #Placeholder
+    context.form_1040.line_21 = context.form_1040.line_19 + context.form_1040.line_20
 
-    # line_24 = line_22 + line_23 #Total tax owed
+    context.form_1040.line_22 = max(context.form_1040.line_18 - context.form_1040.line_21, 0)
 
-    # print(f"Total tax owed: ${line_24:.2f}")
+    #TODO: Implement line 23
+
+    context.form_1040.line_24 = context.form_1040.line_22 + context.form_1040.line_23
+
 
     # line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
     # line_25b = 0 #Federal income tax withheld from 1099s
