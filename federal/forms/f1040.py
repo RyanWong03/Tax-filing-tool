@@ -218,25 +218,31 @@ def calculate(filing_data):
 
     context.form_1040.line_24 = context.form_1040.line_22 + context.form_1040.line_23
 
+    #TODO: Implement line 25c
     context.form_1040.line_25a = w2_federal_tax_withheld
+    context.form_1040.line_25b = sum([context.schedule_b.federal_tax_withheld_interest,
+                                     context.schedule_b.federal_tax_withheld_dividends,
+                                     context.form_8949.federal_tax_withheld])
+    context.form_1040.line_25d = sum([context.form_1040.line_25a,
+                                     context.form_1040.line_25b,
+                                     context.form_1040.line_25c])
 
-    # line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
-    # line_25b = 0 #Federal income tax withheld from 1099s
+    #TODO: Implement line 26
 
-    # print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
+    #TODO: Implement lines 27a-c
 
-    # line_25d = line_25a + line_25b
+    #TODO: Implement line 28
 
-    # line_26 = 0 #Placeholder
+    #TODO: Implement line 29
 
-    # line_27a = 0 #Placeholder
-    # line_28 = 0 #Placeholder
-    # line_29 = 0 #Placeholder
-    # line_30 = 0 #Placeholder
-    # line_31 = 0 #Placeholder
-    # line_32 = line_27a + line_28 + line_29 + line_30 + line_31 #Total other payments and refundable credits
+    #TODO: Implement line 30
 
-    # line_33 = line_25d + line_26 + line_32 #Total payments
+    #TODO: Implement line 31
+
+    context.form_1040.line_32 = sum([context.form_1040.line_27a, context.form_1040.line_28_actc_amt, context.form_1040.line_29,
+                                     context.form_1040.line_30, context.form_1040.line_31])
+
+    context.form_1040.line_33 = sum([context.form_1040.line_25d, context.form_1040.line_26, context.form_1040.line_32])
 
     # line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
 

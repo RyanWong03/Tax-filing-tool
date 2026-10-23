@@ -27,7 +27,7 @@ def add_long_term_sale(context):
     context.form_8949.long_term_entries["D"].append({
         "description": "test", "date_acquired": "01/01/2024", "date_sold": "06/01/2025",
         "proceeds": 8000, "cost_basis": 3000, "adjustments": 0, "adjustment_code": None,
-        "gain": 5000, "w2_federal_tax_withheld": 0, "state_tax_withheld": 0
+        "gain": 5000, "federal_tax_withheld": 0, "state_tax_withheld": 0
     })
 
 def read_saved(tmp_path):
@@ -312,19 +312,19 @@ def form_lines(context):
  
 def interest_entry(amount, bond_interest=0, tax_exempt_interest=0):
     return {"payer": "Test Bank", "amount": amount, "bond_interest": bond_interest,
-            "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": tax_exempt_interest}
+            "early_withdrawal_penalty": 0, "federal_tax_withheld": 0, "tax_exempt_interest": tax_exempt_interest}
  
  
 def dividend_entry(ordinary=0, qualified=0, cap_gain_distributions=0):
     return {"payer": "Fidelity", "ordinary_dividends": ordinary, "qualified_dividends": qualified,
             "cap_gain_distributions": cap_gain_distributions, "unrecaptured_sec_1250_gain": 0,
-            "fed_tax_withheld": 0, "section_199a_dividends": 0}
+            "federal_tax_withheld": 0, "section_199a_dividends": 0}
  
  
 def sale(gain):
     return {"description": "test", "date_acquired": "01/01/2024", "date_sold": "06/01/2025",
             "proceeds": 10000 + gain, "cost_basis": 10000, "adjustments": 0, "adjustment_code": None,
-            "gain": gain, "w2_federal_tax_withheld": 0, "state_tax_withheld": 0}
+            "gain": gain, "federal_tax_withheld": 0, "state_tax_withheld": 0}
  
  
 def test_wages_only():
@@ -770,9 +770,9 @@ def test_1099_withholding_goes_to_line_25b_not_25a():
     # 1099-INT box 4 = 80 and 1099-DIV box 4 = 45 -> 125 on line 25b. W-2 withholding (6000) stays on 25a.
     context = make_1040_context()
     interest = interest_entry(1000)
-    interest["fed_tax_withheld"] = 80
+    interest["federal_tax_withheld"] = 80
     dividend = dividend_entry(ordinary=500, qualified=300)
-    dividend["fed_tax_withheld"] = 45
+    dividend["federal_tax_withheld"] = 45
     context.schedule_b.interest_entries.append(interest)
     context.schedule_b.dividend_entries.append(dividend)
  
@@ -790,10 +790,10 @@ def test_withholding_from_several_1099s_is_added_together():
     context = make_1040_context()
     for amount in (10, 20):
         entry = interest_entry(500)
-        entry["fed_tax_withheld"] = amount
+        entry["federal_tax_withheld"] = amount
         context.schedule_b.interest_entries.append(entry)
     dividend = dividend_entry(ordinary=400, qualified=0)
-    dividend["fed_tax_withheld"] = 5
+    dividend["federal_tax_withheld"] = 5
     context.schedule_b.dividend_entries.append(dividend)
  
     run_calculate(context, 60000)
@@ -803,11 +803,9 @@ def test_withholding_from_several_1099s_is_added_together():
  
  
 def test_1099_b_withholding_goes_to_line_25b():
-    # Assumes your 1099-B entries' "w2_federal_tax_withheld" key (box 4) is counted in line 25b.
-    # If you decide 1099-B withholding is out of scope, delete this test.
     context = make_1040_context()
     entry = sale(5000)
-    entry["w2_federal_tax_withheld"] = 200
+    entry["federal_tax_withheld"] = 200
     context.form_8949.long_term_entries["D"].append(entry)
  
     run_calculate(context, 60000)
@@ -858,7 +856,7 @@ def test_lines_25_to_33_add_up():
     # Whatever the individual lines are, the form's arithmetic must hold.
     context = make_1040_context()
     interest = interest_entry(1000)
-    interest["fed_tax_withheld"] = 80
+    interest["federal_tax_withheld"] = 80
     context.schedule_b.interest_entries.append(interest)
  
     run_calculate(context, 60000, withheld=6000)

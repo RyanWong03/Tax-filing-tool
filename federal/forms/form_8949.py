@@ -1,5 +1,3 @@
-import library
-
 class form_8949_context:
     def __init__(self):
         self.short_term_entries = {
@@ -13,6 +11,9 @@ class form_8949_context:
             "E": [],
             "F": [],
         }
+
+        self.federal_tax_withheld = 0
+        self.state_tax_withheld = 0
 
 #Short term stock sales from 1099-B forms
 def collect_1099_b_short_term(context):
@@ -70,9 +71,11 @@ def collect_1099_b_short_term(context):
                         "amount": accrued_market_discount,
                         "bond_interest": 0,
                         "early_withdrawal_penalty": 0,
-                        "fed_tax_withheld": 0,
+                        "federal_tax_withheld": 0,
                         "tax_exempt_interest": 0
                     })
+
+                context.form_8949.federal_tax_withheld += federal_tax_withheld
 
                 while True:
                     more_entries = input(f"Do you have more short term entries for code {code} to add? (yes/no): ").strip().lower()
@@ -142,10 +145,12 @@ def collect_1099_b_long_term(context):
                         "amount": accrued_market_discount,
                         "bond_interest": 0,
                         "early_withdrawal_penalty": 0,
-                        "fed_tax_withheld": 0,
+                        "federal_tax_withheld": 0,
                         "tax_exempt_interest": 0
                     })
 
+                context.form_8949.federal_tax_withheld += federal_tax_withheld
+                
                 while True:
                     more_entries = input(f"Do you have more long term entries for code {code} to add? (yes/no): ").strip().lower()
                     if more_entries == 'no' or more_entries == 'yes':

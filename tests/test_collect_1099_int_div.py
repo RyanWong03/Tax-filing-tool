@@ -36,7 +36,7 @@ def test_int_single_form(monkeypatch):
         "amount": 1000.50,
         "bond_interest": 300,
         "early_withdrawal_penalty": 25,
-        "fed_tax_withheld": 50,
+        "federal_tax_withheld": 50,
         "tax_exempt_interest": 10,
     }]
 
@@ -52,7 +52,7 @@ def test_int_whole_dollar_boxes_are_rounded_and_interest_is_kept_exact(monkeypat
     assert entry["amount"] == 1000.55
     assert entry["bond_interest"] == 300.25
     assert entry["early_withdrawal_penalty"] == 26
-    assert entry["fed_tax_withheld"] == 50
+    assert entry["federal_tax_withheld"] == 50
     assert entry["tax_exempt_interest"] == 11
 
 def test_int_payer_name_is_trimmed(monkeypatch):
@@ -111,7 +111,7 @@ def test_div_single_form(monkeypatch):
         "qualified_dividends": 250,
         "cap_gain_distributions": 100,
         "unrecaptured_sec_1250_gain": 50,
-        "fed_tax_withheld": 10,
+        "federal_tax_withheld": 10,
         "section_199a_dividends": 20,
     }]
 
@@ -126,7 +126,7 @@ def test_div_every_box_is_rounded_to_whole_dollars(monkeypatch):
     assert entry["qualified_dividends"] == 250
     assert entry["cap_gain_distributions"] == 101
     assert entry["unrecaptured_sec_1250_gain"] == 50
-    assert entry["fed_tax_withheld"] == 11
+    assert entry["federal_tax_withheld"] == 11
     assert entry["section_199a_dividends"] == 21
 
 def test_div_two_forms(monkeypatch):

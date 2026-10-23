@@ -142,7 +142,7 @@ def test_short_term_accrued_market_discount_goes_to_schedule_b(monkeypatch):
         "amount": 125.50,
         "bond_interest": 0,
         "early_withdrawal_penalty": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "tax_exempt_interest": 0,
     }]
     assert len(context.form_8949.short_term_entries["A"]) == 1
