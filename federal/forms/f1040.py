@@ -218,6 +218,7 @@ def calculate(filing_data):
 
     context.form_1040.line_24 = context.form_1040.line_22 + context.form_1040.line_23
 
+    context.form_1040.line_25a = w2_federal_tax_withheld
 
     # line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
     # line_25b = 0 #Federal income tax withheld from 1099s

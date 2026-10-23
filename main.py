@@ -1,4 +1,8 @@
-import importlib, library, federal.forms.f1040, tax_context
+import importlib
+import federal.forms.f1040
+import federal.forms.form_8949
+import federal.forms.schedule_b
+import tax_context
 
 def load_year(year):
     try:
@@ -41,6 +45,10 @@ def main():
         'context': context
     }
 
+    federal.forms.schedule_b.collect_1099_int(context)
+    federal.forms.schedule_b.collect_1099_div(context)
+    federal.forms.form_8949.collect_1099_b_short_term(context)
+    federal.forms.form_8949.collect_1099_b_long_term(context)
     federal.forms.f1040.calculate(filing_data)
 
 
