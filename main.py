@@ -57,14 +57,15 @@ def main():
     refund = context.form_1040.line_34
     if refund > 0:
         while True:
-            filing_data["amount_refunded_to_taxpayer"] = library.irs_round(float(input("Enter the amount based on line 34 that you want \
-                                                                    refunded to you. Note: the amount you put will be \
-                                                                    rounded to the nearest whole number.")))
+            filing_data["amount_refunded_to_taxpayer"] = library.irs_round(float(input(
+                "Enter the amount based on line 34 that you want refunded to you. "
+                "Note: the amount you put will be rounded to the nearest whole number. "
+            )))
             #TODO: Implement routing/account number and type of bank account.
-            filing_data["apply_estimated_tax_next_year"] = library.irs_round(float(input(f"Enter the amount based on \
-                                                                    line 34 that you want applied to your {year + 1} \
-                                                                    estimated tax. Note: the amount you put will be \
-                                                                    rounded to the nearest whole number.")))
+            filing_data["apply_estimated_tax_next_year"] = library.irs_round(float(input(
+                f"Enter the amount based on line 34 that you want applied to your {year + 1} estimated tax."
+                "Note: the amount you put will be rounded to the nearest whole number."
+            )))
 
             if filing_data["amount_refunded_to_taxpayer"] >= 0 and \
             filing_data["apply_estimated_tax_next_year"] >= 0 and \

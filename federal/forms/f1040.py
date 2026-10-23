@@ -328,7 +328,7 @@ def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
 def save_current_year_return(context):
     tax_return = {
         "tax_year": context.tax_year,
-        "form_1040_line_15": context.form_1040.line_15,
+        "form_1040_line_15": context.form_1040.line_11b - context.form_1040.line_14,
         "schedule_d_line_7": context.schedule_d.net_short_term_gain_loss,
         "schedule_d_line_15": context.schedule_d.net_long_term_gain_loss,
         "schedule_d_line_16": context.schedule_d.line_16,
