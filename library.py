@@ -47,8 +47,6 @@ def bootstrap_prior_year_return(tax_year):
             prior_return["schedule_d_line_15"] = float(input(f"Enter Schedule D line 15 from your {tax_year - 1} return: "))
             prior_return["schedule_d_line_16"] = float(input(f"Enter Schedule D line 16 from your {tax_year - 1} return: "))
             prior_return["schedule_d_line_21"] = float(input(f"Enter Schedule D line 21 from your {tax_year - 1} return: "))
-            prior_return["short_term_carryover_to_next_year"] = float(input("Enter short-term carryover shown on worksheet (0 if none): "))
-            prior_return["long_term_carryover_to_next_year"] = float(input("Enter long-term carryover shown on worksheet (0 if none): "))
 
     save_tax_return(tax_year - 1, prior_return)
     return prior_return
@@ -61,8 +59,6 @@ def default_prior_year_return(tax_year):
         "schedule_d_line_15": 0,
         "schedule_d_line_16": 0,
         "schedule_d_line_21": 0,
-        "short_term_carryover_to_next_year": 0,
-        "long_term_carryover_to_next_year": 0
     }
 
 def save_tax_return(tax_year, tax_return):

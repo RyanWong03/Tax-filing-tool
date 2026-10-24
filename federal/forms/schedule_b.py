@@ -53,7 +53,7 @@ def collect_1099_int(context):
             #Not taxable by state and local, but is taxable federally.
             bond_interest = float(input("Enter the total interest on U.S. Savings Bonds from the 1099-INT form (Box 3): "))
 
-            fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
+            federal_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-INT form (Box 4): ")))
 
             #Exempt federally, taxed by state or local.
             tax_exempt_interest = library.irs_round(float(input("Enter the total tax-exempt interest from the 1099-INT form (Box 8): ")))
@@ -63,7 +63,7 @@ def collect_1099_int(context):
                 "amount": amount,
                 "bond_interest": bond_interest,
                 "early_withdrawal_penalty": early_withdrawal_penalty,
-                "fed_tax_withheld": fed_tax_withheld,
+                "federal_tax_withheld": federal_tax_withheld,
                 "tax_exempt_interest": tax_exempt_interest
             })
 
@@ -113,9 +113,10 @@ def collect_1099_div(context):
             #here just return line 2b val basically, but later on in schedule D, we need to fill out the worksheet to fill in line 19 of schedule D.
             unrecaptured_sec_1250_gain = library.irs_round(float(input("Enter the total Unrecaptured Section 1250 gains from the 1099-DIV form (Box 2b): ")))
 
-            fed_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-DIV form (Box 4): ")))
+            federal_tax_withheld = library.irs_round(float(input("Enter the total federal income tax withheld from the 1099-DIV form (Box 4): ")))
 
-            #box 5, section 199a dividends, need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
+            #box 5, section 199a dividends
+            # TODO: need to fill out form 8995 with info. check taxable income though, if made enough later on, will need to fill 8995-A instead
             section_199a_dividends = library.irs_round(float(input("Enter the total Section 199A dividends from the 1099-DIV form (Box 5): ")))
 
             context.schedule_b.dividend_entries.append({
@@ -124,7 +125,7 @@ def collect_1099_div(context):
                 "qualified_dividends": qualified_dividends,
                 "cap_gain_distributions": cap_gain_distributions,
                 "unrecaptured_sec_1250_gain": unrecaptured_sec_1250_gain,
-                "fed_tax_withheld": fed_tax_withheld,
+                "federal_tax_withheld": federal_tax_withheld,
                 "section_199a_dividends": section_199a_dividends
             })
 
@@ -156,7 +157,7 @@ def aggregate_schedule_b(context):
     )
 
     context.schedule_b.federal_tax_withheld_interest = library.irs_round(
-        sum(e["fed_tax_withheld"] for e in context.schedule_b.interest_entries)
+        sum(e["federal_tax_withheld"] for e in context.schedule_b.interest_entries)
     )
 
     context.schedule_b.tax_exempt_interest = library.irs_round(
@@ -181,7 +182,7 @@ def aggregate_schedule_b(context):
     )
 
     context.schedule_b.federal_tax_withheld_dividends = library.irs_round(
-        sum(e["fed_tax_withheld"] for e in context.schedule_b.dividend_entries)
+        sum(e["federal_tax_withheld"] for e in context.schedule_b.dividend_entries)
     )
 
     context.schedule_b.section_199a_dividends = library.irs_round(

@@ -1,5 +1,3 @@
-import library
-
 class form_8949_context:
     def __init__(self):
         self.short_term_entries = {
@@ -70,7 +68,7 @@ def collect_1099_b_short_term(context):
                         "amount": accrued_market_discount,
                         "bond_interest": 0,
                         "early_withdrawal_penalty": 0,
-                        "fed_tax_withheld": 0,
+                        "federal_tax_withheld": 0,
                         "tax_exempt_interest": 0
                     })
 
@@ -142,7 +140,7 @@ def collect_1099_b_long_term(context):
                         "amount": accrued_market_discount,
                         "bond_interest": 0,
                         "early_withdrawal_penalty": 0,
-                        "fed_tax_withheld": 0,
+                        "federal_tax_withheld": 0,
                         "tax_exempt_interest": 0
                     })
 

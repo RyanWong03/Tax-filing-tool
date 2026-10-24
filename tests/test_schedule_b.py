@@ -15,7 +15,7 @@ def test_aggregate_single_interest_entry():
         "amount": 4000,
         "bond_interest": 0,
         "early_withdrawal_penalty": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "tax_exempt_interest": 0
     })
 
@@ -28,11 +28,11 @@ def test_aggregate_multiple_interest_entries():
     context = tax_context.tax_context(YEAR)
     context.schedule_b.interest_entries.append({
         "payer": "Capital One", "amount": 1000.98, "bond_interest": 300,
-        "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": 0
+        "early_withdrawal_penalty": 0, "federal_tax_withheld": 0, "tax_exempt_interest": 0
     })
     context.schedule_b.interest_entries.append({
         "payer": "JP Morgan Chase", "amount": 500.19, "bond_interest": 57.15,
-        "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": 0
+        "early_withdrawal_penalty": 0, "federal_tax_withheld": 0, "tax_exempt_interest": 0
     })
 
     schedule_b.aggregate_schedule_b(context)
@@ -48,7 +48,7 @@ def test_schedule_b_interest_over_threshold():
         "amount": 5234.99,
         "bond_interest": 0,
         "early_withdrawal_penalty": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "tax_exempt_interest": 0
     })
     
@@ -63,7 +63,7 @@ def test_schedule_b_required_for_any_bond_interest():
         "amount": 50,
         "bond_interest": 50,
         "early_withdrawal_penalty": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "tax_exempt_interest": 0
     })
     
@@ -84,7 +84,7 @@ def test_aggregate_single_dividend_entry():
         "qualified_dividends": 250,
         "cap_gain_distributions": 0,
         "unrecaptured_sec_1250_gain": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "section_199a_dividends": 0,
     })
 
@@ -96,12 +96,12 @@ def test_aggregate_multiple_dividend_entries():
     context = tax_context.tax_context(YEAR)
     context.schedule_b.dividend_entries.append({
         "payer": "Fidelity", "ordinary_dividends": 1000, "qualified_dividends": 0,
-        "cap_gain_distributions": 0, "unrecaptured_sec_1250_gain": 0, "fed_tax_withheld": 0,
+        "cap_gain_distributions": 0, "unrecaptured_sec_1250_gain": 0, "federal_tax_withheld": 0,
         "section_199a_dividends": 0
     })
     context.schedule_b.dividend_entries.append({
         "payer": "Vanguard", "ordinary_dividends": 3000, "qualified_dividends": 2500,
-        "cap_gain_distributions": 0, "unrecaptured_sec_1250_gain": 0, "fed_tax_withheld": 0,
+        "cap_gain_distributions": 0, "unrecaptured_sec_1250_gain": 0, "federal_tax_withheld": 0,
         "section_199a_dividends": 0
     })
 
@@ -118,7 +118,7 @@ def test_schedule_b_dividend_over_threshold():
         "qualified_dividends": 18424.30,
         "cap_gain_distributions": 0,
         "unrecaptured_sec_1250_gain": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "section_199a_dividends": 0,
     })
 
@@ -130,13 +130,13 @@ def test_schedule_b_not_required_when_all_thresholds_unmet():
     context.constants = TAX_YEAR
     context.schedule_b.interest_entries.append({
         "payer": "Chase Bank", "amount": 500, "bond_interest": 0,
-        "early_withdrawal_penalty": 0, "fed_tax_withheld": 0, "tax_exempt_interest": 0
+        "early_withdrawal_penalty": 0, "federal_tax_withheld": 0, "tax_exempt_interest": 0
     })
 
     context.schedule_b.dividend_entries.append({
         "payer": "Fidelity", "ordinary_dividends": 300, "qualified_dividends": 200,
         "cap_gain_distributions": 0, "unrecaptured_sec_1250_gain": 0,
-        "fed_tax_withheld": 0, "section_199a_dividends": 0
+        "federal_tax_withheld": 0, "section_199a_dividends": 0
     })
 
     schedule_b.aggregate_schedule_b(context)
@@ -149,7 +149,7 @@ def test_aggregate_all_schedule_b_fields():
         "amount": 1000,
         "bond_interest": 200,
         "early_withdrawal_penalty": 50,
-        "fed_tax_withheld": 75,
+        "federal_tax_withheld": 75,
         "tax_exempt_interest": 25
     })
     context.schedule_b.dividend_entries.append({
@@ -158,7 +158,7 @@ def test_aggregate_all_schedule_b_fields():
         "qualified_dividends": 600,
         "cap_gain_distributions": 150,
         "unrecaptured_sec_1250_gain": 40,
-        "fed_tax_withheld": 30,
+        "federal_tax_withheld": 30,
         "section_199a_dividends": 20
     })
 

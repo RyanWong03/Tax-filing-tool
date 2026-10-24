@@ -7,58 +7,117 @@ import json
 class form_1040_context:
     def __init__(self):
         self.line_1a = 0
+        self.line_1b = 0
+        self.line_1c = 0
+        self.line_1d = 0
+        self.line_1e = 0
+        self.line_1f = 0
+        self.line_1g = 0
+        self.line_1h = 0
+        self.line_1i = 0
         self.line_1z = 0
         self.line_2a = 0
         self.line_2b = 0
         self.line_3a = 0
         self.line_3b = 0
+        self.line_3c_childs_dividends_included_in_line_3a = False
+        self.line_3c_childs_dividends_included_in_line_3b = False
+        self.line_4a = 0
+        self.line_4b = 0
+        self.line_4c_rollover = False
+        self.line_4c_qcd = False
+        self.line_4c_misc = False
+        self.line_4c_misc_value = ""
+        self.line_5a = 0
+        self.line_5b = 0
+        self.line_5c_rollover = False
+        self.line_5c_pso = False
+        self.line_5c_misc = False
+        self.line_5c_misc_value = ""
+        self.line_6a = 0
+        self.line_6b = 0
+        self.line_6c = False
+        self.line_6d = False
         self.line_7a = 0
+        self.line_7b_schedule_d_not_required = False
+        self.line_7b_includes_childs_capital_gain_loss = False
+        self.line_7b_includes_childs_capital_gain_loss_amt = 0
+        self.line_8 = 0
         self.line_9 = 0
-        self.line_11 = 0
-        self.line_12 = 0
+        self.line_10 = 0
+        self.line_11a = 0
+        self.line_11b = 0
+        self.line_12a_you_are_claimed_as_dependent = False
+        self.line_12a_spouse_is_claimed_as_dependent = False
+        self.line_12b = False
+        self.line_12c = False
+        self.line_12d_you_are_age_65_plus = False
+        self.line_12d_you_are_blind = False
+        self.line_12d_spouse_is_age_65_plus = False
+        self.line_12d_spouse_is_blind = False
+        self.line_12e = 0
+        self.line_13a = 0
+        self.line_13b = 0
         self.line_14 = 0
         self.line_15 = 0
-        self.line_16 = 0
+        self.line_16_amt = 0
+        self.line_16_form_8814 = False
+        self.line_16_form_4972 = False
+        self.line_16_form_misc = False
+        self.line_16_form_misc_value = ""
         self.line_17 = 0
         self.line_18 = 0
+        self.line_19 = 0
+        self.line_20 = 0
         self.line_21 = 0
         self.line_22 = 0
         self.line_23 = 0
         self.line_24 = 0
         self.line_25a = 0
         self.line_25b = 0
+        self.line_25c = 0
         self.line_25d = 0
         self.line_26 = 0
         self.line_27a = 0
-        self.line_28 = 0
+        self.line_27b = False
+        self.line_27c = False
+        self.line_28_reject_actc_claim = False
+        self.line_28_actc_amt = 0
         self.line_29 = 0
         self.line_30 = 0
         self.line_31 = 0
         self.line_32 = 0
         self.line_33 = 0
         self.line_34 = 0
+        self.line_35a_form_8888 = False
+        self.line_35a_amt = 0
+        self.line_35b_routing_number = ""
+        self.line_35c_checking_account = False
+        self.line_35c_saving_account = False
+        self.line_35d_account_number = ""
         self.line_36 = 0
         self.line_37 = 0
+        self.line_38 = 0
 
 def collect_w2():
     print("Please gather all of your W-2 forms from any jobs you have worked during the year.")
 
     total_wages = 0
-    total_fed_tax_withheld = 0
+    total_w2_fed_tax_withheld = 0
 
     form_data = {
         "wages": 0,
-        "federal_tax_withheld": 0,
+        "w2_federal_tax_withheld": 0,
     }
 
     while True:
         try:
             wages = float(input("Enter the total wages from a W-2 form (Box 1): "))
             
-            fed_tax_withheld = float(input("Enter the total federal income tax withheld from the W-2 form (Box 2): "))
+            w2_fed_tax_withheld = float(input("Enter the total federal income tax withheld from the W-2 form (Box 2): "))
 
             total_wages += wages
-            total_fed_tax_withheld += fed_tax_withheld
+            total_w2_fed_tax_withheld += w2_fed_tax_withheld
 
             more_w2 = None
             while True:
@@ -75,111 +134,139 @@ def collect_w2():
     
     #Populating return dict
     form_data["wages"] = library.irs_round(total_wages)
-    form_data["federal_tax_withheld"] = library.irs_round(total_fed_tax_withheld)
+    form_data["w2_federal_tax_withheld"] = library.irs_round(total_w2_fed_tax_withheld)
 
     return form_data
 
 def calculate(filing_data):
     context = filing_data['context']
-    constants = filing_data['constants']
+    constants = filing_data['context'].constants
     filing_status = context.filing_status
     tax_year = context.tax_year
     wages = filing_data['wages']
+    w2_federal_tax_withheld = filing_data['w2_federal_tax_withheld']
     standard_deduction = constants.STANDARD_DEDUCTION[filing_status]
+    refund_amound_to_taxpayer = filing_data['amount_refunded_to_taxpayer']
+    estimated_tax_next_year = filing_data['apply_estimated_tax_next_year']
 
     prior_year_return = library.load_prior_year_return(tax_year)
-    # #testing
-    # federal.forms.schedule_b.collect_1099_int(context)
-    # federal.forms.schedule_b.collect_1099_div(context)
-    #federal.forms.form_8949.collect_1099_b_short_term(context)
-    #print(context.form_8949.short_term_entries)
-    #federal.forms.form_8949.collect_1099_b_long_term(context)
-    #print(context.form_8949.long_term_entries)
 
-    # federal.forms.schedule_b.aggregate_schedule_b(context)
+    context.form_1040.line_1a = wages
+    #TODO: Check if any of line_1b-i need to be implemented
+    context.form_1040.line_1z = context.form_1040.line_1a
 
-    # print(f"interest entries: {context.schedule_b.interest_entries}")
-    # print(f"dividend entries: {context.schedule_b.dividend_entries}")
-    # print(f"taxable interest: {context.schedule_b.taxable_interest}")
-    # print(f"ordinary dividends: {context.schedule_b.ordinary_dividends}")
+    federal.forms.schedule_b.aggregate_schedule_b(context)
+    context.form_1040.line_2a = context.schedule_b.tax_exempt_interest
+    context.form_1040.line_2b = context.schedule_b.taxable_interest
+    context.form_1040.line_3a = context.schedule_b.qualified_dividends
+    context.form_1040.line_3b = context.schedule_b.ordinary_dividends
+    #Note: line 3c can be left blank since the applicant has no children.
 
-    # federal.forms.schedule_b.schedule_b_fillout(context)
-    # ####### testing end #######
-    # line_1a = wages
-    # line_1z = line_1a #Total wages
+    #TODO: Implement lines 4a-c
 
-    # total_interest_data = federal.forms.schedule_b.total_interest() #From 1099-INT forms
-    # line_2a = total_interest_data["tax_exempt_interest"]
-    # line_2b = total_interest_data["taxable_interest"]
+    #TODO: Implement lines 5a-c
 
-    # total_dividends_data = federal.forms.schedule_b.total_dividends() #From 1099-DIV forms
-    # line_3a = total_dividends_data["qualified_dividends"]
-    # line_3b = total_dividends_data["ordinary_dividends"]
+    #TODO: Implement lines 6a-c
+
+    #Line 7a is set inside aggregate_schedule_d
+    federal.forms.schedule_d.aggregate_schedule_d(context, prior_year_return)
+
+    #Note: 7b "Schedule D not required": always unchecked. We file Schedule D whenever there are sales,
+    # capital gain distributions, or a loss carryover, even when Exception 1 would let us skip it.
+    # "Includes child's capital gain or (loss)": always unchecked (no Form 8814) since the applicant has no children. 
+
+    #TODO: Implement line 8
+
+    #Total income
+    #TODO: Append lines 4b, 5b, 6b, 8 once implemented
+    context.form_1040.line_9 = sum(x or 0 for x in (
+        context.form_1040.line_1z, context.form_1040.line_2b, context.form_1040.line_3b, context.form_1040.line_7a,
+    ))
+
+    #TODO: Implement line 10
+
+    #AGI
+    context.form_1040.line_11a = context.form_1040.line_9 - context.form_1040.line_10
+    context.form_1040.line_11b = context.form_1040.line_11a
+
+    #Note: Line 12a-12d checkboxes: all unchecked. We assume: not claimable as a dependent, not MFS, not
+    # dual-status, under 65, not blind. Revisit if any of these change (they change the standard deduction).
+
+    #TODO: Implement Schedule A. Then, change line 12e so it picks between standard/itemized deduction depending on the
+    #greater value.
+    context.form_1040.line_12e = standard_deduction
+
+    #TODO: Look into the necessity of implementing lines 13a-b
+
+    #TODO: If lines 13a-b get implemented, append those to the sum of line 14
+    context.form_1040.line_14 = context.form_1040.line_12e
+
+    context.form_1040.line_15 = max(context.form_1040.line_11b - context.form_1040.line_14, 0)
+
+    if context.schedule_d.line_20 is False:
+        context.form_1040.line_16_amt = federal.forms.schedule_d.compute_schedule_d_tax_worksheet(context)
+    elif context.schedule_d.line_20 is True or context.schedule_d.line_22 is True:
+        context.form_1040.line_16_amt = compute_qualified_dividends_and_capital_gain_tax_worksheet(context)
+    else:
+        context.form_1040.line_16_amt = library.calculate_income_tax(context.form_1040.line_15, constants.TAX_BRACKETS[filing_status])
+
+    #TODO: Implement line 17
+
+    context.form_1040.line_18 = context.form_1040.line_16_amt + context.form_1040.line_17
+
+    #TODO: Implement line 19
+
+    #TODO: Implement line 20
+
+    context.form_1040.line_21 = context.form_1040.line_19 + context.form_1040.line_20
+
+    context.form_1040.line_22 = max(context.form_1040.line_18 - context.form_1040.line_21, 0)
+
+    #TODO: Implement line 23
+
+    context.form_1040.line_24 = context.form_1040.line_22 + context.form_1040.line_23
+
+    #TODO: Implement line 25c
+    context.form_1040.line_25a = w2_federal_tax_withheld
+    context.form_1040.line_25b = sum([context.schedule_b.federal_tax_withheld_interest,
+                                     context.schedule_b.federal_tax_withheld_dividends,
+                                     context.schedule_d.federal_tax_withheld])
+    context.form_1040.line_25d = sum([context.form_1040.line_25a,
+                                     context.form_1040.line_25b,
+                                     context.form_1040.line_25c])
+
+    #TODO: Implement line 26
+
+    #TODO: Implement lines 27a-c
+
+    #TODO: Implement line 28
+
+    #TODO: Implement line 29
+
+    #TODO: Implement line 30
+
+    #TODO: Implement line 31
+
+    context.form_1040.line_32 = sum([context.form_1040.line_27a, context.form_1040.line_28_actc_amt, context.form_1040.line_29,
+                                     context.form_1040.line_30, context.form_1040.line_31])
+
+    context.form_1040.line_33 = sum([context.form_1040.line_25d, context.form_1040.line_26, context.form_1040.line_32])
+
+    if context.form_1040.line_33 > context.form_1040.line_24:
+        context.form_1040.line_34 = context.form_1040.line_33 - context.form_1040.line_24 
+
+    #Refund
+    #TODO: Implement line_35a_form_8888
+    if context.form_1040.line_34 > 0:
+        context.form_1040.line_35a_amt = refund_amound_to_taxpayer
+        #TODO: Implement lines 35b-d
     
-    # line_9 = line_1z + line_2b + line_3b #Total income
+        context.form_1040.line_36 = estimated_tax_next_year
 
-    # line_11 = line_9 #AGI
+    #Tax owed
+    context.form_1040.line_37 = max(context.form_1040.line_24 - context.form_1040.line_33, 0)
 
-    # line_12 = standard_deduction
-
-    # line_14 = line_12 #AGI - standard deduction
-
-    # line_15 = max(0, line_11 - line_14) #Taxable income
-
-    # print(f"Taxable income: ${line_15:.2f}")
-
-    # line_16 = calculate_income_tax(line_15, constants.TAX_BRACKETS[filing_status]) #Tax owed
-    #TODO: For line 16, check if schedule d line 20 is true or false, then fill out the forms based on that.
-    #TODO: For line 16, check if schedule d line 22 is true or false, then fill out the forms based on that.
-
-    # line_17 = 0 #Placeholder 
-
-    # line_18 = line_16 + line_17 
-
-    # line_21 = 0 #Placeholder
-
-    # line_22 = 0 if line_18 - line_21 < 0 else line_18 - line_21
-
-    # line_23 = 0 #Placeholder
-
-    # line_24 = line_22 + line_23 #Total tax owed
-
-    # print(f"Total tax owed: ${line_24:.2f}")
-
-    # line_25a = filing_data['w2_federal_tax_withheld'] #Federal income tax withheld from W-2s
-    # line_25b = 0 #Federal income tax withheld from 1099s
-
-    # print(f"Total federal income tax withheld from W-2s: ${line_25a:.2f}")
-
-    # line_25d = line_25a + line_25b
-
-    # line_26 = 0 #Placeholder
-
-    # line_27a = 0 #Placeholder
-    # line_28 = 0 #Placeholder
-    # line_29 = 0 #Placeholder
-    # line_30 = 0 #Placeholder
-    # line_31 = 0 #Placeholder
-    # line_32 = line_27a + line_28 + line_29 + line_30 + line_31 #Total other payments and refundable credits
-
-    # line_33 = line_25d + line_26 + line_32 #Total payments
-
-    # line_34 = (line_33 - line_24) if (line_33 > line_24) else 0 #Overpaid amount in taxes
-
-    # print(f"Refund amount: ${line_34:.2f}")
-
-    # line_36 = 0 #Default amount
-    # while True:
-    #     line_36 = float(input(f"Enter the amount from line 34 you want to apply to your {constants.tax_year+1} estimated tax (if any): "))
-    #     if(line_36 > line_34):
-    #         print("You cannot apply more than your total refund to estimated taxes. Please try again.")
-    #     else:
-    #         break
-
-    # line_37 = line_24 - line_33 if (line_24 - line_33 > 0) else 0 #Amount of taxed owed
-
-    # print(f"Amount of tax owed: ${line_37:.2f}")
-    # line_38 = 0 #For the sake of this, ignore penalties...
+    #TODO: Implement line 38
 
 #Computes the Qualified Dividends and Capital Gain Tax Worksheet and saves it to the user's local app data directory.
 #Arguments:
@@ -237,3 +324,38 @@ def save_qualified_dividends_and_capital_gain_tax_worksheet(context, worksheet):
     
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
+
+def save_current_year_return(context):
+    tax_return = {
+        "tax_year": context.tax_year,
+        "form_1040_line_15": context.form_1040.line_11b - context.form_1040.line_14,
+        "schedule_d_line_7": context.schedule_d.net_short_term_gain_loss,
+        "schedule_d_line_15": context.schedule_d.net_long_term_gain_loss,
+        "schedule_d_line_16": context.schedule_d.line_16,
+        "schedule_d_line_21": context.schedule_d.line_21,
+    }
+    library.save_tax_return(context.tax_year, tax_return)
+
+
+def print_summary(context):
+    f = context.form_1040
+    d = context.schedule_d
+    rows = [
+        ("Total income (line 9)", f.line_9),
+        ("Adjusted gross income (line 11)", f.line_11b),
+        ("Standard deduction (line 12e)", f.line_12e),
+        ("Taxable income (line 15)", f.line_15),
+        ("Tax (line 16)", f.line_16_amt),
+        ("Total tax (line 24)", f.line_24),
+        ("Total payments (line 33)", f.line_33),
+        ("Overpaid / refund (line 34)", f.line_34),
+        ("Refunded to you (line 35a)", f.line_35a_amt),
+        ("Applied to estimated tax (line 36)", f.line_36),
+        ("Amount you owe (line 37)", f.line_37),
+        ("Capital gain or loss (line 7a)", f.line_7a),
+        ("Schedule D net short-term (line 7)", d.net_short_term_gain_loss),
+        ("Schedule D net long-term (line 15)", d.net_long_term_gain_loss),
+    ]
+    print("\n=== RETURN SUMMARY ===")
+    for label, value in rows:
+        print(f"{label:<40} ${value:,}")

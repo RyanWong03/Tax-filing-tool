@@ -660,7 +660,7 @@ def test_net_long_term_gain_loss_includes_capital_gain_distributions():
         "qualified_dividends": 0,
         "cap_gain_distributions": 500,
         "unrecaptured_sec_1250_gain": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "section_199a_dividends": 0
     })
 
@@ -914,7 +914,7 @@ def test_filing_schedule_d_required_for_capital_gain_distributions_only():
         "qualified_dividends": 0,
         "cap_gain_distributions": 500,
         "unrecaptured_sec_1250_gain": 0,
-        "fed_tax_withheld": 0,
+        "federal_tax_withheld": 0,
         "section_199a_dividends": 0
     })
 
