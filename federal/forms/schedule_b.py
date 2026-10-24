@@ -196,11 +196,10 @@ def is_filing_schedule_b(context):
 
 #TODO: Finish this.
 def schedule_b_fillout(context):
-    if is_filing_schedule_b(context):
-        print("Part 1: Interest\n")
-        for index, entry in enumerate(context.schedule_b.interest_entries):
-            print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
+    print("Part 1: Interest\n")
+    for index, entry in enumerate(context.schedule_b.interest_entries):
+        print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
 
-        print("Part 2: Dividends\n")
-        for index, entry in enumerate(context.schedule_b.dividend_entries):
-            print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")
+    print("Part 2: Dividends\n")
+    for index, entry in enumerate(context.schedule_b.dividend_entries):
+        print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")

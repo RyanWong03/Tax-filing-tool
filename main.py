@@ -81,6 +81,7 @@ def main():
 
     federal.forms.f1040.save_current_year_return(context)
     federal.forms.f1040.print_summary(context)
+    federal.forms.schedule_b.schedule_b_fillout(context)
 
 
 if __name__ == "__main__":
