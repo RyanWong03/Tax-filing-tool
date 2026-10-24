@@ -81,8 +81,17 @@ def main():
 
     federal.forms.f1040.save_current_year_return(context)
     federal.forms.f1040.print_summary(context)
-    federal.forms.schedule_b.schedule_b_fillout(context)
+    fill_out_forms(context)
 
+#Fills out all IRS (and eventually state) forms. Checks if it is necessary to file form before filling out PDF.
+#Arguments:
+#   context: The tax context object containing the current tax year and other relevant information.
+def fill_out_forms(context):
+    if federal.forms.schedule_b.is_filing_schedule_b(context):
+        print("YES")
+        federal.forms.schedule_b.schedule_b_fillout(context)
+    else:
+        print("NO")
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 import library
+import form_fillout
 
 class schedule_b_context:
     def __init__(self):
@@ -197,6 +198,13 @@ def is_filing_schedule_b(context):
 #TODO: Finish this.
 def schedule_b_fillout(context):
     print("Part 1: Interest\n")
+
+    form = form_fillout.Form(f"{library.FED_FORM_DIR}f1040sb.pdf")
+    form.put(1, "Alice")       # text box
+    form.put(2, "a@b.com")     # text box
+    form.put(65, True)         # checkbox: True ticks, False unticks
+
+    form.save("filled.pdf")
     for index, entry in enumerate(context.schedule_b.interest_entries):
         print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
 

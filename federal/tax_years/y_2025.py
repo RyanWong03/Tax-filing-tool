@@ -49,6 +49,7 @@ QDCGT_FIFTEEN_RATE_MAX = {
 #Schedule D: Max capital losses deductible in a year against ordinary income
 SCHEDULE_D_CAPITAL_LOSS_DEDUCTION_LIMIT = {
     'single': 3000, #Includes everything except married filing separately
+    'married_filing_jointly': 3000,
     #'married_filing_separately': 1500,
 }
 

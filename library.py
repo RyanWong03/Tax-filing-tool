@@ -2,6 +2,8 @@ import os
 import json
 import math
 
+FED_FORM_DIR = "federal/forms/raw_forms/"
+
 #Rounds to the nearest whole dollar. Cents <= 0.49 get dropped, cents >= 0.50 get rounded up.
 def irs_round(amount):
     if amount >= 0: return int(amount + 0.5)
