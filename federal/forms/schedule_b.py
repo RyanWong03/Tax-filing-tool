@@ -200,14 +200,26 @@ def schedule_b_fillout(context):
     print("Part 1: Interest\n")
 
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f1040sb.pdf")
-    form.put(1, "Alice")       # text box
-    form.put(2, "a@b.com")     # text box
-    form.put(65, True)         # checkbox: True ticks, False unticks
+    # form.put(1, "Alice")       # text box
+    # form.put(2, "a@b.com")     # text box
+    # form.put(65, True)         # checkbox: True ticks, False unticks
 
+    #Starting pdf field to fill in from
+    start = 3
+    #Right now it is payer and interest amount
+    number_of_fields_per_entry = 2
+    for i in range(number_of_fields_per_entry * len(context.schedule_b.interest_entries)):
+        entry = context.schedule_b.interest_entries[i // number_of_fields_per_entry]
+        if i % 2 != 0:
+            form.put(i + start, entry['payer'])
+        else:
+            form.put(i + start, f"{sum([entry['amount'], entry['interest']]):.2f}")
+    # for index, entry in enumerate(context.schedule_b.interest_entries):
+    #     print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
+
+    # print("Part 2: Dividends\n")
+    # for index, entry in enumerate(context.schedule_b.dividend_entries):
+    #     print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")
+
+    
     form.save("filled.pdf")
-    for index, entry in enumerate(context.schedule_b.interest_entries):
-        print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
-
-    print("Part 2: Dividends\n")
-    for index, entry in enumerate(context.schedule_b.dividend_entries):
-        print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")
