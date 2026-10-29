@@ -3,7 +3,6 @@ import federal.forms.schedule_b as schedule_b
 import federal.forms.form_8949 as form_8949
 import federal.forms.schedule_d as schedule_d
 from conftest import YEAR
-import json
 import main
 import library
 
@@ -193,11 +192,13 @@ def test_main_with_interest_and_dividends_over_1500_each(monkeypatch):
     run_main(monkeypatch, [
         "2025", "single",
         "60000", "0", "no",                                        # W-2
-        "", "Chase", "2000", "0", "0", "0", "0", "no",             # 1099-INT: box 1 = 2000
-        "", "Fidelity", "1800", "0", "0", "0", "0", "0", "no",     # 1099-DIV: box 1a = 1800
+        "", "Chase", "2000", "0", "0", "0", "0", "yes",            # 1099-INT: box 1 = 2000
+        "Capital One", "4452.32", "0", "0", "0", "0", "no",        # 1099-INT: box 1 = 4452.32
+        "", "Fidelity", "1800", "0", "0", "0", "0", "0", "yes",    # 1099-DIV: box 1a = 1800
+        "Vanguard", "15000", "0", "0", "0", "0", "0", "no",        # 1099-DIV: box 1a = 15000
         "X", "X",                                                  # no sales
     ])
 
     saved = saved_return()
-    assert saved["form_1040_line_15"] == 48050
+    assert saved["form_1040_line_15"] == 67502
     assert saved["schedule_d_line_16"] == 0

@@ -195,14 +195,8 @@ def is_filing_schedule_b(context):
     has_bond_interest = any(e["bond_interest"] > 0 for e in context.schedule_b.interest_entries)
     return context.schedule_b.taxable_interest > threshold or context.schedule_b.ordinary_dividends > threshold or has_bond_interest
 
-#TODO: Finish this.
 def schedule_b_fillout(context):
-    print("Part 1: Interest\n")
-
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f1040sb.pdf")
-    # form.put(1, "Alice")       # text box
-    # form.put(2, "a@b.com")     # text box
-    # form.put(65, True)         # checkbox: True ticks, False unticks
 
     #Starting pdf field to fill in from
     start = 3
@@ -210,16 +204,18 @@ def schedule_b_fillout(context):
     number_of_fields_per_entry = 2
     for i in range(number_of_fields_per_entry * len(context.schedule_b.interest_entries)):
         entry = context.schedule_b.interest_entries[i // number_of_fields_per_entry]
-        if i % 2 != 0:
+        if i % 2 == 0:
             form.put(i + start, entry['payer'])
         else:
-            form.put(i + start, f"{sum([entry['amount'], entry['interest']]):.2f}")
-    # for index, entry in enumerate(context.schedule_b.interest_entries):
-    #     print(f"Line {index + 1}: {entry['payer']} ... ${(entry['amount'] + entry['bond_interest']):.2f}\n")
+            form.put(i + start, f"{sum([entry['amount'], entry['bond_interest']]):.2f}")
 
-    # print("Part 2: Dividends\n")
-    # for index, entry in enumerate(context.schedule_b.dividend_entries):
-    #     print(f"Line {index + 1}: {entry['payer']} ... ${entry['ordinary_dividends']:.2f}\n")
-
+    start = 34
+    #number_of_fields_per_entry is payer and ordinary dividends
+    for i in range(number_of_fields_per_entry * len(context.schedule_b.dividend_entries)):
+        entry = context.schedule_b.dividend_entries[i // number_of_fields_per_entry]
+        if i % 2 == 0:
+            form.put(i + start, entry['payer'])
+        else:
+            form.put(i + start, f"{entry['ordinary_dividends']:.2f}")
     
-    form.save("filled.pdf")
+    form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/schedule_b.pdf")

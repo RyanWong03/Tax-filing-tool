@@ -1,4 +1,5 @@
 from pypdf import PdfReader, PdfWriter
+from pathlib import Path
 
 def full_name(o):
     parts, p = [], o
@@ -32,12 +33,6 @@ class Form:
 
     def save(self, path):
         self.w.set_need_appearances_writer(True)
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
         self.w.write(path)
-
-# form = Form("f1040sb.pdf")
-
-# form.put(1, "Alice")       # text box
-# form.put(2, "a@b.com")     # text box
-# form.put(65, True)         # checkbox: True ticks, False unticks
-
-# form.save("filled.pdf")
