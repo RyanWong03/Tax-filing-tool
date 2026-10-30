@@ -199,23 +199,26 @@ def schedule_b_fillout(context):
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f1040sb.pdf")
 
     #Starting pdf field to fill in from
-    start = 3
+    field = 3
     #Right now it is payer and interest amount
     number_of_fields_per_entry = 2
     for i in range(number_of_fields_per_entry * len(context.schedule_b.interest_entries)):
         entry = context.schedule_b.interest_entries[i // number_of_fields_per_entry]
         if i % 2 == 0:
-            form.put(i + start, entry['payer'])
+            form.put(i + field, entry['payer'])
         else:
-            form.put(i + start, f"{sum([entry['amount'], entry['bond_interest']]):.2f}")
+            form.put(i + field, f"{sum([entry['amount'], entry['bond_interest']]):.2f}")
 
-    start = 34
+    field = 31
+    form.put(field, f"{context.schedule_b.taxable_interest}")
+
+    field = 34
     #number_of_fields_per_entry is payer and ordinary dividends
     for i in range(number_of_fields_per_entry * len(context.schedule_b.dividend_entries)):
         entry = context.schedule_b.dividend_entries[i // number_of_fields_per_entry]
         if i % 2 == 0:
-            form.put(i + start, entry['payer'])
+            form.put(i + field, entry['payer'])
         else:
-            form.put(i + start, f"{entry['ordinary_dividends']:.2f}")
+            form.put(i + field, f"{entry['ordinary_dividends']:.2f}")
     
     form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/schedule_b.pdf")
