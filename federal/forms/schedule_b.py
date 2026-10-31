@@ -22,6 +22,7 @@ class schedule_b_context:
         self.federal_tax_withheld_dividends = 0
         self.section_199a_dividends = 0
 
+        self.excludable_interest_series_ee_and_savings_bonds = 0
 
 #Enums for determining which section of Schedule B to fill out
 INTEREST = 0
@@ -198,6 +199,7 @@ def is_filing_schedule_b(context):
 def schedule_b_fillout(context):
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f1040sb.pdf")
 
+    #line 1
     #Starting pdf field to fill in from
     field = 3
     #Right now it is payer and interest amount
@@ -209,9 +211,20 @@ def schedule_b_fillout(context):
         else:
             form.put(i + field, f"{sum([entry['amount'], entry['bond_interest']]):.2f}")
 
+    #line 2
     field = 31
     form.put(field, f"{context.schedule_b.taxable_interest}")
 
+    #Omitting line 3: "Excludable interest on series EE and I U.S. savings bonds issued after 1989."
+    #TODO: Future may want to implement Form 8815.
+
+    #line 4
+    field = 33
+    form.put(field,
+             f"{context.schedule_b.taxable_interest - context.schedule_b.excludable_interest_series_ee_and_savings_bonds}"
+             )
+
+    #line 5
     field = 34
     #number_of_fields_per_entry is payer and ordinary dividends
     for i in range(number_of_fields_per_entry * len(context.schedule_b.dividend_entries)):
@@ -220,5 +233,19 @@ def schedule_b_fillout(context):
             form.put(i + field, entry['payer'])
         else:
             form.put(i + field, f"{entry['ordinary_dividends']:.2f}")
-    
+
+    #line 6
+    field = 64
+    form.put(field, f"{context.schedule_b.ordinary_dividends}")
+
+    #line 7a
+    field = 66
+    form.put(field, True)
+
+    #Omitting second part of line 7a and line 7b because it's irrevelant to us.
+
+    #line 8
+    field = 72
+    form.put(field, True)
+
     form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/schedule_b.pdf")
