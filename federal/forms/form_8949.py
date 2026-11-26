@@ -202,6 +202,7 @@ def form_8949_fillout(context):
                     form.put(field, entry["adjustments"])
                 field += 1
                 form.put(field, entry["gain"])
+                field += 1
 
             field = 97
             match short_term_entry_code:
