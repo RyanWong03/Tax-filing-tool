@@ -93,5 +93,7 @@ def fill_out_forms(context):
     else:
         print("NO")
 
+    federal.forms.form_8949.form_8949_fillout(context)
+
 if __name__ == "__main__":
     main()

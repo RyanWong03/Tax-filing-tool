@@ -293,3 +293,5 @@ def form_8949_fillout(context):
                         form.put(field, context.schedule_d.code_f_adjustments_total)
                     field += 1
                     form.put(field, context.schedule_d.code_f_gain_loss_total)
+
+        form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{i + 1}.pdf")

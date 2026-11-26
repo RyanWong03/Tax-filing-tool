@@ -30,3 +30,28 @@ TAX_BRACKETS = {
 }   
 
 #TODO Add remaining constants for 2026, including QDCGT thresholds and Schedule D capital loss deduction limits once IRS releases them.
+#Qualified Dividends and Capital Gain Tax Worksheet thresholds for 2026
+QDCGT_ZERO_RATE_MAX = {
+    'single': 49450,
+    #'married_filing_separately': 49450,
+    'married_filing_jointly': 98900,
+    #'qualifying_surviving_spouse': 98900,
+    #'head_of_household': 66200,
+}
+
+QDCGT_FIFTEEN_RATE_MAX = {
+    'single': 545500,
+    #'married_filing_separately': 306850,
+    'married_filing_jointly': 613700,
+    #'qualifying_surviving_spouse': 613700,
+    #'head_of_household': 579600,
+}
+
+#Schedule D: Max capital losses deductible in a year against ordinary income
+SCHEDULE_D_CAPITAL_LOSS_DEDUCTION_LIMIT = {
+    'single': 3000, #Includes everything except married filing separately
+    'married_filing_jointly': 3000,
+    #'married_filing_separately': 1500,
+}
+
+SCHEDULE_B_THRESHOLD = 1500
