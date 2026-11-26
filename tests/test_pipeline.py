@@ -5,9 +5,16 @@ import federal.forms.schedule_d as schedule_d
 from conftest import YEAR
 import main
 import library
+import os
+import glob
 
 # These tests run the whole path: typed answers -> stored entries -> Schedule B and D totals.
 # They catch a mismatch between what the entry code stores and what the math code reads.
+
+def form_8949_pages():
+    """Names of the Form 8949 pages that were written to the (temp) data directory."""
+    pattern = f"{library.get_data_dir()}/{YEAR}/federal/form_8949_*.pdf"
+    return sorted(os.path.basename(p) for p in glob.glob(pattern))
 
 def type_answers(monkeypatch, answers):
     """Makes input() return these answers one at a time, in order."""
@@ -160,6 +167,7 @@ def test_main_with_interest_dividends_and_a_sale_reaches_the_form(monkeypatch):
     assert saved["schedule_d_line_15"] == 5000
     assert saved["schedule_d_line_16"] == 5000
     assert saved["schedule_d_line_21"] == 0
+    assert form_8949_pages() == ["form_8949_0_0.pdf"]
 
 
 def test_main_unsupported_year_asks_again(monkeypatch):
@@ -215,8 +223,50 @@ def test_main_with_short_term_sales_long_term_sales(monkeypatch):
     ])
 
     saved = saved_return()
-    # assert saved["form_1040_line_15"] == 50750
-    # assert saved["schedule_d_line_7"] == 0
-    # assert saved["schedule_d_line_15"] == 5000
-    # assert saved["schedule_d_line_16"] == 5000
-    # assert saved["schedule_d_line_21"] == 0
+    assert saved["form_1040_line_15"] == 85263
+    assert saved["schedule_d_line_7"] == 3779
+    assert saved["schedule_d_line_15"] == 37234
+    assert saved["schedule_d_line_16"] == 41013
+    assert saved["schedule_d_line_21"] == 0
+
+def test_main_with_multiple_form_8949_forms(monkeypatch):
+    run_main(monkeypatch, [
+        "2025", "single",
+        "60000", "5000", "no",
+        "n", "n",
+        "A", "Fidelity", "5000 shares of AAPL", "06/10/2025", "12/31/2025", "5235.52", "2234.13", "0", "0", "0", "0", "yes", #short-term
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "no",
+        "D", "Fidelity", "5000 shares of MSFT", "01/01/2023", "06/01/2025", "8000", "3000", "0", "0", "0", "0", "yes", #Long-term
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "yes",
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "0", "0", "0", "no"
+    ])
+
+    saved = saved_return()
+    assert saved["form_1040_line_15"] == 451006
+    assert saved["schedule_d_line_7"] == 8714
+    assert saved["schedule_d_line_15"] == 398042
+    assert saved["schedule_d_line_16"] == 406756
+    assert saved["schedule_d_line_21"] == 0
+    assert form_8949_pages() == ["form_8949_0_0.pdf", "form_8949_0_1.pdf"]  

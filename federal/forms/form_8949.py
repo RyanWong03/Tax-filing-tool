@@ -1,7 +1,14 @@
+import math
 import library
 import form_fillout
 from itertools import zip_longest
-from contextlib import suppress
+import os
+
+ENTRIES_PER_FORM = 11
+
+# Field numbers on f8949.pdf for each part of the form
+SHORT_TERM_PART = {"checkboxes": {"A": 3, "B": 4, "C": 5}, "first_row": 9, "totals": 97}
+LONG_TERM_PART = {"checkboxes": {"D": 104, "E": 105, "F": 106}, "first_row": 110, "totals": 198}
 
 class form_8949_context:
     def __init__(self):
@@ -159,139 +166,214 @@ def collect_1099_b_long_term(context):
             except ValueError:
                 print("Invalid input. Please enter a numeric value.")
 
-#TODO: Implement function that actually fill out the form(s).
+# def form_8949_fillout(context):
+#     present_short_term_entries = [k for k, v in context.form_8949.short_term_entries.items() if v]
+#     present_long_term_entries = [k for k, v in context.form_8949.long_term_entries.items() if v]
+
+#     stock_entry_pairs = list(zip_longest(present_short_term_entries, present_long_term_entries))
+#     number_of_forms = len(stock_entry_pairs)
+
+#     #Max number of short/long term entries per form before we need to create a 2nd continuation form
+#     entries_per_form = 11
+
+#     for i in range(number_of_forms):
+#         with suppress(IndexError):
+#             short_term_entry_code = present_short_term_entries[i]
+
+#             for x in range(math.ceil(len(context.form_8949.short_term_entries[short_term_entry_code]) / entries_per_form)):
+#                 form = form_fillout.Form(f"{library.FED_FORM_DIR}f8949.pdf")
+#                 match short_term_entry_code:
+#                     case "A":
+#                         form.put(3, True)
+#                     case "B":
+#                         form.put(4, True)
+#                     case "C":
+#                         form.put(5, True)
+
+#                 proceeds_sum = 0
+#                 cost_basis_sum = 0
+#                 adjustments_sum = 0
+#                 gain_sum = 0
+
+#                 field = 9
+#                 entries = context.form_8949.short_term_entries[short_term_entry_code]
+#                 start = x * entries_per_form
+#                 end = min(len(entries), start + entries_per_form)
+#                 for entry in range(start, end):
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["description"])
+#                     field += 1
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["date_acquired"])
+#                     field += 1
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["date_sold"])
+#                     field += 1
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["proceeds"])
+#                     proceeds_sum += context.form_8949.short_term_entries[short_term_entry_code][entry]["proceeds"]
+#                     field += 1
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["cost_basis"])
+#                     cost_basis_sum += context.form_8949.short_term_entries[short_term_entry_code][entry]["cost_basis"]
+#                     field += 1
+#                     if context.form_8949.short_term_entries[short_term_entry_code][entry]["adjustments"] != 0:
+#                         form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["adjustment_code"])
+#                     field += 1
+#                     if context.form_8949.short_term_entries[short_term_entry_code][entry]["adjustments"] != 0:
+#                         form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["adjustments"])
+#                         adjustments_sum += context.form_8949.short_term_entries[short_term_entry_code][entry]["adjustments"]
+#                     field += 1
+#                     form.put(field, context.form_8949.short_term_entries[short_term_entry_code][entry]["gain"])
+#                     gain_sum += context.form_8949.short_term_entries[short_term_entry_code][entry]["gain"]
+#                     field += 1
+
+#                 field = 97
+
+#                 form.put(field, proceeds_sum)
+#                 field += 1
+#                 form.put(field, cost_basis_sum)
+#                 field += 2
+                
+#                 match short_term_entry_code:
+#                     case "A":
+#                         if context.schedule_d.code_a_adjustments_total != 0:
+#                             form.put(field, adjustments_sum)
+#                     case "B":
+#                         if context.schedule_d.code_b_adjustments_total != 0:
+#                             form.put(field, context.schedule_d.code_b_adjustments_total)
+#                     case "C":
+#                         if context.schedule_d.code_c_adjustments_total != 0:
+#                             form.put(field, context.schedule_d.code_c_adjustments_total)
+
+#                 field += 1
+#                 form.put(field, gain_sum)
+
+#                 form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{(i + 1) * x}.pdf")
+
+#         with suppress(IndexError):
+#             long_term_entry_code = present_long_term_entries[i]
+
+#             for x in range(math.ceil(len(context.form_8949.long_term_entries[long_term_entry_code]) / entries_per_form)):
+#                 form = form_fillout.Form(f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{(i + 1) * x}.pdf")
+#                 match long_term_entry_code:
+#                     case "D":
+#                         form.put(104, True)
+#                     case "E":
+#                         form.put(105, True)
+#                     case "F":
+#                         form.put(106, True)
+
+#                 proceeds_sum = 0
+#                 cost_basis_sum = 0
+#                 adjustments_sum = 0
+#                 gain_sum = 0
+
+#                 field = 110
+#                 entries = context.form_8949.long_term_entries[long_term_entry_code]
+#                 start = x * entries_per_form
+#                 end = min(len(entries), start + entries_per_form)
+#                 for entry in range(start, end):
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["description"])
+#                     field += 1
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["date_acquired"])
+#                     field += 1
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["date_sold"])
+#                     field += 1
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["proceeds"])
+#                     proceeds_sum += context.form_8949.long_term_entries[long_term_entry_code][entry]["proceeds"]
+#                     field += 1
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["cost_basis"])
+#                     cost_basis_sum += context.form_8949.long_term_entries[long_term_entry_code][entry]["cost_basis"]
+#                     field += 1
+#                     if context.form_8949.long_term_entries[long_term_entry_code][entry]["adjustments"] != 0:
+#                         form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["adjustment_code"])
+#                     field += 1
+#                     if context.form_8949.long_term_entries[long_term_entry_code][entry]["adjustments"] != 0:
+#                         form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["adjustments"])
+#                         adjustments_sum += context.form_8949.long_term_entries[long_term_entry_code][entry]["adjustments"]
+#                     field += 1
+#                     form.put(field, context.form_8949.long_term_entries[long_term_entry_code][entry]["gain"])
+#                     gain_sum += context.form_8949.long_term_entries[long_term_entry_code][entry]["gain"]
+#                     field += 1
+
+#                 field = 198
+
+#                 form.put(field, proceeds_sum)
+#                 field += 1
+#                 form.put(field, cost_basis_sum)
+#                 field += 2
+
+#                 match long_term_entry_code:
+#                     case "D":
+#                         if context.schedule_d.code_d_adjustments_total != 0:
+#                             form.put(field, context.schedule_d.code_d_adjustments_total)
+#                     case "E":
+#                         if context.schedule_d.code_e_adjustments_total != 0:
+#                             form.put(field, context.schedule_d.code_e_adjustments_total)
+#                     case "F":
+#                         if context.schedule_d.code_f_adjustments_total != 0:
+#                             form.put(field, context.schedule_d.code_f_adjustments_total)
+
+#                 field += 1
+#                 form.put(field, gain_sum)
+
+#                 form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{(i + 1) * x}.pdf")
+
+def page_path(context, i, x):
+    return f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{i}_{x}.pdf"
+
+def fill_part(context, entries, code, x, part, i):
+    """Fills one page (up to 11 rows) of Part I or Part II. Short-term and long-term
+    for the same i/x share one physical sheet, so reuse the page if it already exists."""
+    path = page_path(context, i, x)
+    source = path if os.path.exists(path) else f"{library.FED_FORM_DIR}f8949.pdf"
+    form = form_fillout.Form(source)
+
+    form.put(part["checkboxes"][code], True)
+
+    proceeds_sum = 0
+    cost_basis_sum = 0
+    adjustments_sum = 0
+    gain_sum = 0
+
+    field = part["first_row"]
+    start = x * ENTRIES_PER_FORM
+    end = min(len(entries), start + ENTRIES_PER_FORM)
+    for entry in entries[start:end]:
+        form.put(field, entry["description"])
+        form.put(field + 1, entry["date_acquired"])
+        form.put(field + 2, entry["date_sold"])
+        form.put(field + 3, entry["proceeds"])
+        form.put(field + 4, entry["cost_basis"])
+        if entry["adjustments"] != 0:
+            form.put(field + 5, entry["adjustment_code"])
+            form.put(field + 6, entry["adjustments"])
+        form.put(field + 7, entry["gain"])
+
+        proceeds_sum += entry["proceeds"]
+        cost_basis_sum += entry["cost_basis"]
+        adjustments_sum += entry["adjustments"]
+        gain_sum += entry["gain"]
+        field += 8
+
+    totals = part["totals"]
+    form.put(totals, proceeds_sum)
+    form.put(totals + 1, cost_basis_sum)
+    if adjustments_sum != 0:
+        form.put(totals + 3, adjustments_sum)   # field totals+2 is skipped (code column)
+    form.put(totals + 4, gain_sum)
+
+    form.save(path)
+
 def form_8949_fillout(context):
-    form = form_fillout.Form(f"{library.FED_FORM_DIR}f8949.pdf")
+    short = context.form_8949.short_term_entries
+    long = context.form_8949.long_term_entries
 
-    present_short_term_entries = [k for k, v in context.form_8949.short_term_entries.items() if v]
-    present_long_term_entries = [k for k, v in context.form_8949.long_term_entries.items() if v]
+    present_short = [k for k, v in short.items() if v]
+    present_long = [k for k, v in long.items() if v]
 
-    stock_entry_pairs = list(zip_longest(present_short_term_entries, present_long_term_entries))
-    number_of_forms = len(stock_entry_pairs)
+    # i = which code pair (A with D, B with E, ...). x = which continuation page for that code.
+    for i, (short_code, long_code) in enumerate(zip_longest(present_short, present_long)):
+        if short_code is not None:
+            for x in range(math.ceil(len(short[short_code]) / ENTRIES_PER_FORM)):
+                fill_part(context, short[short_code], short_code, x, SHORT_TERM_PART, i)
 
-    for i in range(number_of_forms):
-        with suppress(IndexError):
-            short_term_entry_code = present_short_term_entries[i]
-
-            match short_term_entry_code:
-                case "A":
-                    form.put(3, True)
-                case "B":
-                    form.put(4, True)
-                case "C":
-                    form.put(5, True)
-
-            field = 9
-            for entry in context.form_8949.short_term_entries[short_term_entry_code]:
-                form.put(field, entry["description"])
-                field += 1
-                form.put(field, entry["date_acquired"])
-                field += 1
-                form.put(field, entry["date_sold"])
-                field += 1
-                form.put(field, entry["proceeds"])
-                field += 1
-                form.put(field, entry["cost_basis"])
-                field += 1
-                if entry["adjustments"] != 0:
-                    form.put(field, entry["adjustment_code"])
-                field += 1
-                if entry["adjustments"] != 0:
-                    form.put(field, entry["adjustments"])
-                field += 1
-                form.put(field, entry["gain"])
-                field += 1
-
-            field = 97
-            match short_term_entry_code:
-                case "A":
-                    form.put(field, context.schedule_d.code_a_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_a_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_a_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_a_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_a_gain_loss_total)
-                case "B":
-                    form.put(field, context.schedule_d.code_b_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_b_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_b_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_b_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_b_gain_loss_total)
-                case "C":
-                    form.put(field, context.schedule_d.code_c_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_c_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_c_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_c_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_c_gain_loss_total)
-
-        with suppress(IndexError):
-            long_term_entry_code = present_long_term_entries[i]
-            
-            match long_term_entry_code:
-                case "D":
-                    form.put(104, True)
-                case "E":
-                    form.put(105, True)
-                case "F":
-                    form.put(106, True)
-
-            field = 110
-            for entry in context.form_8949.long_term_entries[long_term_entry_code]:
-                form.put(field, entry["description"])
-                field += 1
-                form.put(field, entry["date_acquired"])
-                field += 1
-                form.put(field, entry["date_sold"])
-                field += 1
-                form.put(field, entry["proceeds"])
-                field += 1
-                form.put(field, entry["cost_basis"])
-                field += 1
-                if entry["adjustments"] != 0:
-                    form.put(field, entry["adjustment_code"])
-                field += 1
-                if entry["adjustments"] != 0:
-                    form.put(field, entry["adjustments"])
-                field += 1
-                form.put(field, entry["gain"])
-                field += 1
-
-            field = 198
-            match long_term_entry_code:
-                case "D":
-                    form.put(field, context.schedule_d.code_d_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_d_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_d_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_d_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_d_gain_loss_total)
-                case "E":
-                    form.put(field, context.schedule_d.code_e_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_e_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_e_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_e_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_e_gain_loss_total)
-                case "F":
-                    form.put(field, context.schedule_d.code_f_proceeds_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_f_cost_basis_total)
-                    field += 2
-                    if context.schedule_d.code_f_adjustments_total != 0:
-                        form.put(field, context.schedule_d.code_f_adjustments_total)
-                    field += 1
-                    form.put(field, context.schedule_d.code_f_gain_loss_total)
-
-        form.save(f"{library.get_data_dir()}/{context.tax_year}/federal/form_8949_{i + 1}.pdf")
+        if long_code is not None:
+            for x in range(math.ceil(len(long[long_code]) / ENTRIES_PER_FORM)):
+                fill_part(context, long[long_code], long_code, x, LONG_TERM_PART, i)
