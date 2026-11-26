@@ -29,7 +29,6 @@ TAX_BRACKETS = {
     ],
 }   
 
-#TODO Add remaining constants for 2026, including QDCGT thresholds and Schedule D capital loss deduction limits once IRS releases them.
 #Qualified Dividends and Capital Gain Tax Worksheet thresholds for 2026
 QDCGT_ZERO_RATE_MAX = {
     'single': 49450,

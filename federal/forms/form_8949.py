@@ -40,12 +40,12 @@ def collect_1099_b_short_term(context):
                 description = input("Enter the description of the property (e.g., '100 shares of XYZ Corp'): ")
                 date_acquired = input("Enter the date acquired (MM/DD/YYYY): ")
                 date_sold = input("Enter the date sold (MM/DD/YYYY): ")
-                proceeds = float(input("Enter the proceeds from the sale: "))
-                cost_basis = float(input("Enter the cost basis of the property: "))
+                proceeds = library.irs_round(float(input("Enter the proceeds from the sale: ")))
+                cost_basis = library.irs_round(float(input("Enter the cost basis of the property: ")))
                 accrued_market_discount = float(input("Enter any accrued market discount (enter 0 if none): "))
-                wash_sale_loss = float(input("Enter any wash sale loss (enter 0 if none): "))
-                federal_tax_withheld = float(input("Enter any federal tax withheld (enter 0 if none): "))
-                state_tax_withheld = float(input("Enter any state tax withheld (enter 0 if none): "))
+                wash_sale_loss = library.irs_round(float(input("Enter any wash sale loss (enter 0 if none): ")))
+                federal_tax_withheld = library.irs_round(float(input("Enter any federal tax withheld (enter 0 if none): ")))
+                state_tax_withheld = library.irs_round(float(input("Enter any state tax withheld (enter 0 if none): ")))
                 adjustment_code = None #Really the only code we'll have is 'W' for wash sale
 
                 if wash_sale_loss > 0:
@@ -112,12 +112,12 @@ def collect_1099_b_long_term(context):
                 description = input("Enter the description of the property (e.g., '100 shares of XYZ Corp'): ")
                 date_acquired = input("Enter the date acquired (MM/DD/YYYY): ")
                 date_sold = input("Enter the date sold (MM/DD/YYYY): ")
-                proceeds = float(input("Enter the proceeds from the sale: "))
-                cost_basis = float(input("Enter the cost basis of the property: "))
+                proceeds = library.irs_round(float(input("Enter the proceeds from the sale: ")))
+                cost_basis = library.irs_round(float(input("Enter the cost basis of the property: ")))
                 accrued_market_discount = float(input("Enter any accrued market discount (enter 0 if none): "))
-                wash_sale_loss = float(input("Enter any wash sale loss (enter 0 if none): "))
-                federal_tax_withheld = float(input("Enter any federal tax withheld (enter 0 if none): "))
-                state_tax_withheld = float(input("Enter any state tax withheld (enter 0 if none): "))
+                wash_sale_loss = library.irs_round(float(input("Enter any wash sale loss (enter 0 if none): ")))
+                federal_tax_withheld = library.irs_round(float(input("Enter any federal tax withheld (enter 0 if none): ")))
+                state_tax_withheld = library.irs_round(float(input("Enter any state tax withheld (enter 0 if none): ")))
                 adjustment_code = None #Really the only code we'll have is 'W' for wash sale
 
                 if wash_sale_loss > 0:
@@ -264,6 +264,7 @@ def form_8949_fillout(context):
                     form.put(field, entry["adjustments"])
                 field += 1
                 form.put(field, entry["gain"])
+                field += 1
 
             field = 198
             match long_term_entry_code:

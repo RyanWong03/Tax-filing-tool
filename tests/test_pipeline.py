@@ -202,3 +202,21 @@ def test_main_with_interest_and_dividends_over_1500_each(monkeypatch):
     saved = saved_return()
     assert saved["form_1040_line_15"] == 67502
     assert saved["schedule_d_line_16"] == 0
+
+def test_main_with_short_term_sales_long_term_sales(monkeypatch):
+    run_main(monkeypatch, [
+        "2025", "single",
+        "60000", "5000", "no",
+        "n", "n",
+        "A", "Fidelity", "5000 shares of AAPL", "06/10/2025", "12/31/2025", "5235.52", "2234.13", "0", "301.23", "0", "0", "yes", #short-term
+        "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "no",
+        "D", "Fidelity", "5000 shares of MSFT", "01/01/2023", "06/01/2025", "8000", "3000", "0", "0", "0", "0", "yes", #Long-term
+        "Vanguard", "20000 shares of VOO", "04/05/2022", "10/23/2025", "53233.52", "23000.33", "0", "2000", "0", "0", "no"
+    ])
+
+    saved = saved_return()
+    # assert saved["form_1040_line_15"] == 50750
+    # assert saved["schedule_d_line_7"] == 0
+    # assert saved["schedule_d_line_15"] == 5000
+    # assert saved["schedule_d_line_16"] == 5000
+    # assert saved["schedule_d_line_21"] == 0
