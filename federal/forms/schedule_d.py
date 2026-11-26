@@ -390,4 +390,6 @@ def is_filing_schedule_d(context):
 
     return has_short_term_sales or has_long_term_sales or has_cap_gain_distributions or has_capital_loss_carryover
 
-#TODO: Implement function that actually fill out the form(s). May not need to fill out the supplemental worksheets.
+#TODO: Implement function that actually fill out the form(s). Fill out supplemental worksheets as well.
+def capital_loss_carryover_worksheet_fillout(context):
+    
