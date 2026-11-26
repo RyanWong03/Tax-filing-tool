@@ -51,8 +51,7 @@ def collect_1099_b_short_term(context):
                 if wash_sale_loss > 0:
                     adjustment_code = 'W'
                 
-                #Round to 2 decimal places to avoid floating point issues.
-                gain = round(proceeds - cost_basis + wash_sale_loss, 2)
+                gain = proceeds - cost_basis + wash_sale_loss
 
                 context.form_8949.short_term_entries[code.strip().capitalize()].append({
                     "description": description,
@@ -123,8 +122,7 @@ def collect_1099_b_long_term(context):
                 if wash_sale_loss > 0:
                     adjustment_code = 'W'
                 
-                #Round to 2 decimal places to avoid floating point issues.
-                gain = round(proceeds - cost_basis + wash_sale_loss, 2)
+                gain = proceeds - cost_basis + wash_sale_loss
 
                 context.form_8949.long_term_entries[code.strip().capitalize()].append({
                     "description": description,

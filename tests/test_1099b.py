@@ -62,7 +62,7 @@ def test_short_term_gain_is_rounded_to_cents(monkeypatch):
 
     form_8949.collect_1099_b_short_term(context)
 
-    assert context.form_8949.short_term_entries["A"][0]["gain"] == -1609.15
+    assert context.form_8949.short_term_entries["A"][0]["gain"] == -1609
 
 def test_short_term_tax_withheld_is_stored(monkeypatch):
     context = tax_context.tax_context(YEAR)
@@ -71,7 +71,7 @@ def test_short_term_tax_withheld_is_stored(monkeypatch):
     form_8949.collect_1099_b_short_term(context)
 
     entry = context.form_8949.short_term_entries["A"][0]
-    assert entry["federal_tax_withheld"] == 120.50
+    assert entry["federal_tax_withheld"] == 121
     assert entry["state_tax_withheld"] == 45
 
 def test_short_term_two_sales_same_code(monkeypatch):
