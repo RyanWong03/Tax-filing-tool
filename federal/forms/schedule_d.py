@@ -269,6 +269,13 @@ def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
 
+def load_unrecaptured_section_1250_gain_worksheet(context):
+    local_app_data_dir = library.get_data_dir()
+    worksheet_file = os.path.join(local_app_data_dir, f"unrecaptured_section_1250_gain_worksheet_{context.tax_year}.json")
+
+    with open(worksheet_file, "r") as f:
+        return json.load(f)
+
 #Computes the Schedule D Tax Worksheet and saves it to the user's local app data directory.
 #Arguments:
 #   context: The tax context object containing the current tax year and other relevant information.
@@ -424,3 +431,6 @@ def capital_loss_carryover_worksheet_fillout(context):
         form.put(13, capital_loss_carryover_worksheet["line_13"])
 
     form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_capital_loss_carryover_worksheet.pdf")
+
+def unrecaptured_section_1250_gain_worksheet_fillout(context):
+    form = form_fillout.Form(f"{library.FED_FORM_DIR}f_unrecaptured_section_1250_gain_worksheet.pdf")
