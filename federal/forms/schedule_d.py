@@ -247,8 +247,8 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
     #Lines 1-9 omitted; irrelevant to us.
 
     worksheet["line_10"] = 0 #Hardcode to 0; irrevelant to us
-    #TODO: Make sure to handler 1099-R case for this
-    worksheet["line_11"] = context.schedule_b.unrecaptured_sec_1250_gain #Schedule K-1, Form 2439, Form 1099-R are irrelevant to us.
+    #TODO: Make sure to handle 1099-R case for this. This will most likely be done in 1099-R logic
+    worksheet["line_11"] = context.schedule_b.unrecaptured_sec_1250_gain #Schedule K-1, Form 2439, are irrelevant to us.
     worksheet["line_12"] = 0 #Hardcode to 0; irrevelant to us
     worksheet["line_13"] = worksheet["line_10"] + worksheet["line_11"] + worksheet["line_12"]
     worksheet["line_14"] = 0 #Hardcode to 0; irrevelant to us
