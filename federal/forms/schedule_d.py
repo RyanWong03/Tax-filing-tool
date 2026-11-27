@@ -205,6 +205,7 @@ def compute_capital_loss_carryover_worksheet(context, prior_year_return):
 
     if prior_year_return["schedule_d_line_15"] >= 0:
         save_capital_loss_carryover_worksheet(context, worksheet)
+        capital_loss_carryover_worksheet_fillout(context)
         return short_term_capital_loss_carryover, long_term_capital_loss_carryover
 
     worksheet["line_9"] = abs(prior_year_return["schedule_d_line_15"])
@@ -217,6 +218,7 @@ def compute_capital_loss_carryover_worksheet(context, prior_year_return):
         long_term_capital_loss_carryover = worksheet["line_13"]
 
     save_capital_loss_carryover_worksheet(context, worksheet)
+    capital_loss_carryover_worksheet_fillout(context)
     return short_term_capital_loss_carryover, long_term_capital_loss_carryover
     
 def save_capital_loss_carryover_worksheet(context, worksheet):
@@ -225,6 +227,13 @@ def save_capital_loss_carryover_worksheet(context, worksheet):
 
     with open(worksheet_file, "w") as f:
         json.dump(worksheet, f, indent=4)
+
+def load_capital_loss_carryover_worksheet(context):
+    local_app_data_dir = library.get_data_dir()
+    worksheet_file = os.path.join(local_app_data_dir, f"capital_loss_carryover_worksheet_{context.tax_year}.json")
+
+    with open(worksheet_file, "r") as f:
+        return json.load(f)
 
 #Computes the unrecaptured section 1250 gain worksheet and saves it to the user's local app data directory.
 #Arguments:
@@ -394,3 +403,24 @@ def is_filing_schedule_d(context):
 #TODO: Implement function that actually fill out the form(s). Fill out supplemental worksheets as well.
 def capital_loss_carryover_worksheet_fillout(context):
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f_capital_loss_carryover_worksheet.pdf")
+    capital_loss_carryover_worksheet = load_capital_loss_carryover_worksheet(context)
+
+    form.put(1, library.pdf_amount(capital_loss_carryover_worksheet["line_1"]))
+    form.put(2, capital_loss_carryover_worksheet["line_2"])
+    form.put(3, capital_loss_carryover_worksheet["line_3"])
+    form.put(4, capital_loss_carryover_worksheet["line_4"])
+    form.put(5, capital_loss_carryover_worksheet["line_5"])
+
+    if capital_loss_carryover_worksheet.get("line_6") is not None:
+        form.put(6, capital_loss_carryover_worksheet["line_6"])
+        form.put(7, capital_loss_carryover_worksheet["line_7"])
+        form.put(8, capital_loss_carryover_worksheet["line_8"])
+
+    if capital_loss_carryover_worksheet.get("line_9") is not None:
+        form.put(9, capital_loss_carryover_worksheet["line_9"])
+        form.put(10, capital_loss_carryover_worksheet["line_10"])
+        form.put(11, capital_loss_carryover_worksheet["line_11"])
+        form.put(12, capital_loss_carryover_worksheet["line_12"])
+        form.put(13, capital_loss_carryover_worksheet["line_13"])
+
+    form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_capital_loss_carryover_worksheet.pdf")
