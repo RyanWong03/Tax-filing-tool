@@ -277,7 +277,7 @@ def test_main_with_multiple_codes_forms(monkeypatch):
         "2025", "single",
         "60000", "5000", "no",
         "n", "n",
-        "A B", "Fidelity", "5000 shares of AAPL", "06/10/2025", "12/31/2025", "5235.52", "2234.13", "0", "0", "0", "0", "yes", #short-term
+        "A B", "Fidelity", "5000 shares of AAPL", "06/10/2025", "12/31/2025", "0", "2234.13", "0", "0", "0", "0", "yes", #short-term
         "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
         "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
         "Fidelity", "300 shares of GOOGL", "11/01/2025", "11/30/2025", "15000", "14523.54", "0", "0", "0", "0", "yes",
@@ -318,9 +318,9 @@ def test_main_with_multiple_codes_forms(monkeypatch):
     ])
 
     saved = saved_return()
-    assert saved["form_1040_line_15"] == 664548
-    assert saved["schedule_d_line_7"] == 10618
+    assert saved["form_1040_line_15"] == 659312
+    assert saved["schedule_d_line_7"] == 5382
     assert saved["schedule_d_line_15"] == 609680
-    assert saved["schedule_d_line_16"] == 620298
+    assert saved["schedule_d_line_16"] == 615062
     assert saved["schedule_d_line_21"] == 0
     assert form_8949_pages() == ["form_8949_0_0.pdf", "form_8949_0_1.pdf", "form_8949_1_0.pdf", "form_8949_1_1.pdf", "form_8949_2_0.pdf"]
