@@ -494,3 +494,36 @@ def schedule_d_tax_worksheet_fillout(context):
     form.put(20, library.pdf_amount(worksheet["line_20"]))
     form.put(21, worksheet["line_21"])
     form.put(22, library.pdf_amount(worksheet["line_22"]))
+
+    if worksheet.get("line_23") is not None:
+        form.put(23, library.pdf_amount(worksheet["line_23"]))
+        form.put(24, library.pdf_amount(worksheet["line_24"]))
+        form.put(25, worksheet["line_25"])
+        form.put(32, worksheet["line_26"])
+        form.put(34, library.pdf_amount(worksheet["line_27"]))
+        form.put(37, library.pdf_amount(worksheet["line_28"]))
+        form.put(39, worksheet["line_29"])
+        form.put(43, worksheet["line_30"])
+        form.put(45, worksheet["line_31"])
+        form.put(46, library.pdf_amount(worksheet["line_32"]))
+
+        if worksheet.get("line_33") is not None:
+            form.put(47, library.pdf_amount(worksheet["line_33"]))
+            form.put(48, library.pdf_amount(worksheet["line_34"]))
+
+            if worksheet.get("line_35") is not None:
+                form.put(49, library.pdf_amount(worksheet["line_35"]))
+                form.put(50, worksheet["line_36"])
+                form.put(51, library.pdf_amount(worksheet["line_37"]))
+                form.put(52, worksheet["line_38"])
+                form.put(53, worksheet["line_39"])
+                form.put(54, worksheet["line_40"])
+
+                if worksheet.get("line_41") is not None:
+                    form.put(55, library.pdf_amount(worksheet["line_41"]))
+                    form.put(56, library.pdf_amount(worksheet["line_42"]))
+                    form.put(57, library.pdf_amount(worksheet["line_43"]))
+                    form.put(58, worksheet["line_44"])
+                    form.put(59, library.pdf_amount(worksheet["line_45"]))
+                    form.put(60, worksheet["line_46"])
+                    form.put(61, library.pdf_amount(worksheet["line_47"]))
