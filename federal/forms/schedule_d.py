@@ -524,9 +524,10 @@ def schedule_d_tax_worksheet_fillout(context):
                     form.put(55, library.pdf_amount(worksheet["line_41"]))
                     form.put(56, library.pdf_amount(worksheet["line_42"]))
                     form.put(57, library.pdf_amount(worksheet["line_43"]))
-                    form.put(58, worksheet["line_44"])
-                    form.put(59, library.pdf_amount(worksheet["line_45"]))
-                    form.put(60, worksheet["line_46"])
-                    form.put(61, library.pdf_amount(worksheet["line_47"]))
+                    
+    form.put(58, worksheet["line_44"])
+    form.put(59, library.pdf_amount(worksheet["line_45"]))
+    form.put(60, worksheet["line_46"])
+    form.put(61, library.pdf_amount(worksheet["line_47"]))
 
     form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_schedule_d_tax_worksheet.pdf")
