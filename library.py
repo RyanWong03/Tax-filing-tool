@@ -113,3 +113,9 @@ def calculate_income_tax(taxable_income, tax_brackets):
         tax += taxable_at_rate * rate
 
     return irs_round(tax)
+
+def pdf_amount(amount):
+    """Negative amounts print in parentheses on IRS forms: -1609 -> '(1609)'."""
+    if amount < 0:
+        return f"({abs(amount)})"
+    return amount

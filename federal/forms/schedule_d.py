@@ -1,6 +1,7 @@
 import library
 import json
 import os
+import form_fillout
 
 class schedule_d_context:
     def __init__(self):
@@ -392,4 +393,4 @@ def is_filing_schedule_d(context):
 
 #TODO: Implement function that actually fill out the form(s). Fill out supplemental worksheets as well.
 def capital_loss_carryover_worksheet_fillout(context):
-    
+    form = form_fillout.Form(f"{library.FED_FORM_DIR}f_capital_loss_carryover_worksheet.pdf")
