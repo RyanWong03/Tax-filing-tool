@@ -401,6 +401,11 @@ def save_schedule_d_tax_worksheet(context, worksheet):
     with open(path, "w") as f:
         json.dump(worksheet, f, indent=4)
 
+def load_schedule_d_tax_worksheet(context):
+    path = os.path.join(library.get_data_dir(), f"schedule_d_tax_worksheet_{context.tax_year}.json")
+    with open(path, "r") as f:
+        return json.load(f)
+
 def is_filing_schedule_d(context):
     has_short_term_sales = any(context.form_8949.short_term_entries[code] for code in context.form_8949.short_term_entries)
     has_long_term_sales = any(context.form_8949.long_term_entries[code] for code in context.form_8949.long_term_entries)
@@ -461,3 +466,31 @@ def unrecaptured_section_1250_gain_worksheet_fillout(context):
     form.put(23, unrecaptured_section_1250_gain_worksheet["line_18"])
 
     form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_unrecaptured_section_1250_gain_worksheet.pdf")
+
+#Like unrecaptured section 1250 gain worksheet, this is scuffed since extra stray fields got added.
+def schedule_d_tax_worksheet_fillout(context):
+    form = form_fillout.Form(f"{library.FED_FORM_DIR}f_schedule_d_tax_worksheet.pdf")
+    worksheet = load_schedule_d_tax_worksheet(context)
+
+    form.put(1, library.pdf_amount(worksheet["line_1"]))
+    form.put(2, worksheet["line_2"])
+    form.put(3, library.pdf_amount(worksheet["line_3"]))
+    form.put(4, library.pdf_amount(worksheet["line_4"]))
+    form.put(5, worksheet["line_5"])
+    form.put(6, worksheet["line_6"])
+    form.put(7, library.pdf_amount(worksheet["line_7"]))
+    form.put(8, library.pdf_amount(worksheet["line_8"]))
+    form.put(9, worksheet["line_9"])
+    form.put(10, worksheet["line_10"])
+    form.put(11, worksheet["line_11"])
+    form.put(12, worksheet["line_12"])
+    form.put(13, library.pdf_amount(worksheet["line_13"]))
+    form.put(14, worksheet["line_14"])
+    form.put(15, worksheet["line_15"])
+    form.put(16, library.pdf_amount(worksheet["line_16"]))
+    form.put(17, library.pdf_amount(worksheet["line_17"]))
+    form.put(18, worksheet["line_18"])
+    form.put(19, library.pdf_amount(worksheet["line_19"]))
+    form.put(20, library.pdf_amount(worksheet["line_20"]))
+    form.put(21, worksheet["line_21"])
+    form.put(22, library.pdf_amount(worksheet["line_22"]))
