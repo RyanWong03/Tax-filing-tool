@@ -301,6 +301,7 @@ def compute_schedule_d_tax_worksheet(context):
 
     total_tax = schedule_d_tax_worksheet_lines_44_47(context, worksheet)
     save_schedule_d_tax_worksheet(context, worksheet)
+    schedule_d_tax_worksheet_fillout(context)
     return total_tax
 
 #Computes the Schedule D Tax Worksheet lines 1 through 22.
@@ -527,3 +528,5 @@ def schedule_d_tax_worksheet_fillout(context):
                     form.put(59, library.pdf_amount(worksheet["line_45"]))
                     form.put(60, worksheet["line_46"])
                     form.put(61, library.pdf_amount(worksheet["line_47"]))
+
+    form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_schedule_d_tax_worksheet.pdf")
