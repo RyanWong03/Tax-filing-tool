@@ -247,6 +247,7 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
     #Lines 1-9 omitted; irrelevant to us.
 
     worksheet["line_10"] = 0 #Hardcode to 0; irrevelant to us
+    #TODO: Make sure to handler 1099-R case for this
     worksheet["line_11"] = context.schedule_b.unrecaptured_sec_1250_gain #Schedule K-1, Form 2439, Form 1099-R are irrelevant to us.
     worksheet["line_12"] = 0 #Hardcode to 0; irrevelant to us
     worksheet["line_13"] = worksheet["line_10"] + worksheet["line_11"] + worksheet["line_12"]
@@ -260,6 +261,7 @@ def compute_unrecaptured_section_1250_gain_worksheet(context):
         unrecaptured_section_1250_gain = worksheet["line_18"]
 
     save_unrecaptured_section_1250_gain_worksheet(context, worksheet)
+    unrecaptured_section_1250_gain_worksheet_fillout(context)
     return unrecaptured_section_1250_gain
 
 def save_unrecaptured_section_1250_gain_worksheet(context, worksheet):
@@ -432,5 +434,30 @@ def capital_loss_carryover_worksheet_fillout(context):
 
     form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_capital_loss_carryover_worksheet.pdf")
 
+#This form is scuffed since there are extra stray fields that got added to this form so the numbering is slightly off.
 def unrecaptured_section_1250_gain_worksheet_fillout(context):
     form = form_fillout.Form(f"{library.FED_FORM_DIR}f_unrecaptured_section_1250_gain_worksheet.pdf")
+    unrecaptured_section_1250_gain_worksheet = load_unrecaptured_section_1250_gain_worksheet(context)
+
+    if unrecaptured_section_1250_gain_worksheet.get("line_1") is not None:
+        form.put(1, unrecaptured_section_1250_gain_worksheet["line_1"])
+        form.put(2, unrecaptured_section_1250_gain_worksheet["line_2"])
+        form.put(3, unrecaptured_section_1250_gain_worksheet["line_3"])
+        form.put(4, unrecaptured_section_1250_gain_worksheet["line_4"])
+        form.put(5, unrecaptured_section_1250_gain_worksheet["line_5"])
+        form.put(6, unrecaptured_section_1250_gain_worksheet["line_6"])
+        form.put(7, unrecaptured_section_1250_gain_worksheet["line_7"])
+        form.put(9, unrecaptured_section_1250_gain_worksheet["line_8"])
+        form.put(11, unrecaptured_section_1250_gain_worksheet["line_9"])
+
+    form.put(12, unrecaptured_section_1250_gain_worksheet["line_10"])
+    form.put(13, unrecaptured_section_1250_gain_worksheet["line_11"])
+    form.put(14, unrecaptured_section_1250_gain_worksheet["line_12"])
+    form.put(15, unrecaptured_section_1250_gain_worksheet["line_13"])
+    form.put(16, library.pdf_amount(unrecaptured_section_1250_gain_worksheet["line_14"]))
+    form.put(18, library.pdf_amount(unrecaptured_section_1250_gain_worksheet["line_15"]))
+    form.put(20, library.pdf_amount(unrecaptured_section_1250_gain_worksheet["line_16"]))
+    form.put(22, unrecaptured_section_1250_gain_worksheet["line_17"])
+    form.put(23, unrecaptured_section_1250_gain_worksheet["line_18"])
+
+    form.save(f"{library.get_data_dir()}/{context.tax_year}/supplementary/federal/f_unrecaptured_section_1250_gain_worksheet.pdf")
